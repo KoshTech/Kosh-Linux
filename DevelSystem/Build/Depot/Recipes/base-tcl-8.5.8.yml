@@ -15,19 +15,18 @@ info:
   compile_folder: tcl8.5.8/unix
 
 configure:
-  do: no
-  pre: >
+  do: >-
     ./configure --prefix=$TOOLS
 
 make:
-  post: >
+  do: >-
     TZ=UTC make test
 
 make_install:
-  pre: >
+  do: >-
     TZ=UTC make install
 
-  post: >
+  post: >-
     chmod -v u+w $TOOLS/lib/libtcl8.5.so &&
     TZ=UTC make install-private-headers &&
     ln -sv tclsh8.5 $TOOLS/bin/tclsh
