@@ -30,7 +30,7 @@ class Packager
 
   def build_package(package, operation="run")
     if package_status(package) && @options[:force_rebuild] == false
-      puts "Package #{package['name']} already built"
+      printf("%s %s %s\n", "*=> Package".dark_blue, package['name'].dark_green, "already built".dark_blue)
       return true
     end
 
@@ -119,10 +119,10 @@ class Packager
     unless compile_folder.nil?
       FileUtils.cd(compile_path)
       compile_path = "../#{unpack_folder}"
-      puts "== configure_package: compile_path:{#{compile_path}} with unpack_folder:{#{unpack_path}}"
+      puts "*=> configure_package: compile_path:{#{compile_path}} with unpack_folder:{#{unpack_path}}"
     else
       FileUtils.cd(unpack_path)
-      puts "== configure_package: running on unpack_path:{#{unpack_path}} with ."
+      puts "*=> configure_package: running on unpack_path:{#{unpack_path}} with ."
       compile_path = "."
     end
 
@@ -136,11 +136,10 @@ class Packager
     log_file = "#{KoshLinux::LOGS}/configure_#{package['name']}"
     configure_cmd = configure_do === true ? "#{compile_path}/configure" : configure_do
     configure_line = "#{variables} #{configure_cmd} #{prefix} #{options} 2>#{log_file}.err 1>#{log_file}.out"
-    puts "== Configure line: #{configure_line}"
-    puts "Output command configure => #{log_file}"
     configure = environment_box(configure_line)
-    abort("Exiting on configure: #{package['name']}") if configure.nil?
     FileUtils.cd(KoshLinux::KOSH_LINUX_ROOT)
+    puts "*==> Output command configure => #{log_file}.{out,err}"
+    abort("*==] Exiting on configure: #{package['name']}") if configure.nil?
     return configure
   end
 
@@ -162,19 +161,20 @@ class Packager
     unless compile_folder.nil?
       FileUtils.cd(compile_path)
       puts "== make_package: running on compile_folder: #{compile_path}"
+      puts "*=> make_package: running on compile_folder: #{compile_path}"
     else
       FileUtils.cd(unpack_path)
-      puts "== make_package: running on unpack_folder: #{unpack_path}"
+      puts "*=> make_package: running on unpack_folder: #{unpack_path}"
     end
 
     log_file = "#{KoshLinux::WORK}/logs/make_#{package['name']}"
     make_cmd = make_do === true ? 'make' : make_do
     make_line = "#{variables} #{make_cmd} #{options} 2>#{log_file}.err 1>#{log_file}.out"
-    puts "== Line of make: #{make_line}"
-    puts "Output command make => #{log_file}"
     make = environment_box(make_line)
     abort("Exiting on make: #{package['name']}") if make.nil?
     FileUtils.cd(KoshLinux::KOSH_LINUX_ROOT)
+    puts "*==> Output command make => #{log_file}.{out,err}"
+    abort("*==] Exiting on make: #{package['name']}") if make.nil?
     return make
   end
 
@@ -196,9 +196,11 @@ class Packager
     unless compile_folder.nil?
       FileUtils.cd(compile_path)
       puts "== make_install_package: running on compile_folder: #{compile_path}"
+      puts "*=> make_install_package: running on compile_folder: #{compile_path}"
     else
       FileUtils.cd(unpack_path)
       puts "== make_install_package: running on unpack_folder: #{unpack_path}"
+      puts "*=> make_install_package: running on unpack_folder: #{unpack_path}"
     end
 
     log_file = "#{KoshLinux::LOGS}/make_install_#{package['name']}"
@@ -209,6 +211,8 @@ class Packager
     make_install = environment_box(make_install_line)
     abort("Exiting on make_install: #{package['name']}") if make_install.nil?
     FileUtils.cd(KoshLinux::KOSH_LINUX_ROOT)
+    puts "*==> Output command make install => #{log_file}.{out,err}"
+    abort("*==] Exiting on make_install: #{package['name']}") if make_install.nil?
     return make_install
   end
 
@@ -221,26 +225,26 @@ class Packager
     unpack_path = "#{KoshLinux::WORK}/#{unpack_folder}"
     compile_folder = "#{KoshLinux::WORK}/#{package['info']['compile_folder']}"
     packer = package['info']['packer']
-    puts "Unpack path: #{unpack_path}"
+    puts "@=> Unpack path: #{unpack_path}"
     if options[:keep_work] && File.exists?(unpack_path)
-      puts "Using previously unpacked: #{unpack_path}"
+      puts "@==> Using previously unpacked: #{unpack_path}"
       check_compile_path
       return true
     end
-    puts "Unpacking #{file_name}"
+    puts "@==> Unpacking #{file_name}"
     case packer
       when 'tar.bz2' then
-        puts "Archive type: tar.bz2"
+        puts "@===> Archive type: tar.bz2"
         unpack_tar_bz2(archive_path)
       when 'tar.gz' then
-        puts "Archive type: tar.gz"
+        puts "@===> Archive type: tar.gz"
         unpack_tar_gz(archive_path)
       else
-       abort("Error: Unreconized packer type: #{packer}")
+       abort("@==] Unreconized packer type: #{packer}")
     end
     check_compile_path
     unless pack_folder == unpack_folder
-      puts "Renaming file: #{pack_path} => #{unpack_path}"
+      puts "@===> Renaming file: #{pack_path} => #{unpack_path}"
       FileUtils.cd(KoshLinux::WORK)
       FileUtils.mv(pack_folder, unpack_folder)
       FileUtils.cd(KoshLinux::KOSH_LINUX_ROOT)
@@ -263,14 +267,14 @@ class Packager
     compile_folder = @package['info']['compile_folder']
     compile_path   = "#{KoshLinux::WORK}/#{compile_folder}"
     unless compile_folder.nil?
-      puts "Creating compile folder: #{compile_folder} on: #{compile_path}"
+      puts "*==> Creating compile folder: #{compile_folder} on: #{compile_path}"
       FileUtils.mkdir_p(compile_path)
     end
   end
 
   def load_package(file_name)
     file_path = "#{KoshLinux::PACKAGES}/#{file_name}.yml"
-    puts "Loading Recipe (#{file_name}) "
+    puts " ==> Loading Recipe (#{file_name}) <== ".dark_blue
     package = YAML::load_file(file_path)
     package["name"] = file_name
     return package
@@ -301,12 +305,12 @@ class Packager
     result = nil
 
     unless File.exist?(filepath) && check_for_checksum(filepath, checksum)
-      puts "Connecting on #{uri.host}, for download the file #{filename}"
+      puts " => Connecting on #{uri.host}, for download the file #{filename}"
       begin
         pbar = nil
         uri.open(:content_length_proc => lambda {|t|
                    if t && 0 < t;
-                     puts "Downloading file #{filename} from #{only_url} "
+                     puts " => Downloading file #{filename} from #{only_url} "
                      pbar = ProgressBar.new(filename, t)
                      pbar.file_transfer_mode
                    end
@@ -321,18 +325,18 @@ class Packager
           end
         end
       rescue Errno::ETIMEDOUT
-        puts "Timeout error, trying again in few seconds..."
+        puts " ==| Timeout error, trying again in few seconds..."
         sleep 3
         result = fetch_file_download(url_for_download, checksum, file_name)
       rescue SocketError
-        puts "I got error, is your network up? trying again in few seconds..."
+        puts " ==| I got error, is your network up? trying again in few seconds..."
         sleep 5
         result = fetch_file_download(url_for_download, checksum, file_name)
       else
-        puts "Download complete."
+        puts " => Download complete."
       end
     else
-      puts "Skip download, using previously downloaded archive #{file_name}..."
+      puts " => Skip download, using previously downloaded archive #{file_name}..."
       result = filepath
     end
     return result
@@ -342,15 +346,15 @@ class Packager
     return if package[action].nil?
     current_hook = package[action][hook]
     unless current_hook.nil? || current_hook.empty?
-      puts "_== Running hook(#{package['name']}:#{action}.#{hook}): #{current_hook}"
       compile_path = package['info']['compile_folder']
       compile_path = pack_unpack_folder(package) if compile_path.nil?
       FileUtils.cd("#{KoshLinux::WORK}/#{compile_path}")
       log_file = "$LOGS/#{action}-#{hook}_#{package['name']}"
       output_log = " 2>#{log_file}.err 1>#{log_file}.out" 
       result = environment_box(current_hook + output_log)
-      puts "_== End hook(#{action}.#{hook}) ==__"
-      abort("Exiting hook(#{package['name']}:#{action}.#{hook})") if result.nil?
+      puts "#{'#'.green}#{'_=> Running hook('.yellow}#{package['name'].dark_blue}::#{action.blue}.#{hook.green}#{')'.yellow}"
+      puts "#{'#'.green}#{'_=> End hook('.yellow}#{action.blue}.#{hook.green}) ==__"
+      abort(" -==] Exiting hook(#{package['name']}:#{action}.#{hook})") if result.nil?
     end
   end
 
@@ -359,7 +363,7 @@ class Packager
     patches = info['patches']
     return if patches.nil?
     options = info['patches_options']
-    puts "Checking for #{patches.count} patch(es)"
+    puts " => Checking for #{patches.count} patch(es)"
     patches.each do |patch|
       patch_info = patch[1]
       filepath = fetch_file_download(patch_info['download'],patch_info['md5'])
@@ -368,16 +372,16 @@ class Packager
         FileUtils.cd(work_folder)
         unless File.exist?(patch[0])
           options = patch_info['options'] unless patch_info['options'].nil?
-          puts "__== Appling patch: #{patch_info['name']} ==__"
           log_file = "$LOGS/patch_#{package['name']}"
           command_for_patch = "patch #{options} -i #{filepath} 2>#{log_file}.err 1>#{log_file}.out && echo 'patched' >#{patch[0]}"
           result = environment_box(command_for_patch)
-          abort("Error appling patch (#{package['name']}:#{patch_info['name']})") if result.nil?
+          puts " _=> Appling patch: #{patch_info['name']} ==__"
+          abort(" _=> Error appling patch (#{package['name']}:#{patch_info['name']})") if result.nil?
         else
-          puts "No needed patch: #{patch_info['name']}"
+          puts " _=> No needed patch: #{patch_info['name']}"
         end
       else
-        abort("Erro with downloading: #{patch_info['name']}")
+        abort(" _==] Erro with downloading: #{patch_info['name']}")
       end
     end
   end
