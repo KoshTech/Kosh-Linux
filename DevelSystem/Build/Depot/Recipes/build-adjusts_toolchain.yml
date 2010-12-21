@@ -6,7 +6,7 @@ info:
   version: 1
   homepage: http://www.linuxfromscratch.org/lfs/view/stable/chapter05/adjusting.html
   description: "The cross-compiler's specs file needs to be adjusted to point to the new dynamic linker in /tools. This is done by dumping the compiler's “specs” file to a location where it will look for it by default. A simple sed substitution then alters the dynamic linker that GCC will use. The principle here is to find all references to the dynamic linker file in /lib or possibly /lib64 if the host system is 64-bit capable, and adjust them to point to the new location in /tools."
-
+  
 fetch:
   do: no
   
@@ -20,8 +20,17 @@ make:
   do: no
 
 make_install:
-  do: no
-  post: source $BUILD/build-adjusts_toolchain.sh
+  do: |
+    SPECS=`dirname $($LFS_TGT-gcc -print-libgcc-file-name)`/specs
+    $LFS_TGT-gcc -dumpspecs | sed \
+      -e 's@/lib\(64\)\?/ld@/tools&@g' \
+      -e "/^\*cpp:$/{n;s,$, -isystem /tools/include,}" > $SPECS 
+    echo "New specs file is: $SPECS"
+    unset SPECS
 
-build:
+    echo 'main(){}' > dummy.c &&
+    $LFS_TGT-gcc -B/tools/lib dummy.c &&
+    (readelf -l a.out | grep ': /tools') || exit 1
+
+    rm -v dummy.c a.out
 
