@@ -16,7 +16,7 @@ info:
   compile_folder: gcc-4.5.1_build
 
 configure:
-  options: >+
+  options: >-
     --target=$LFS_TGT --disable-nls --disable-shared --disable-multilib 
     --disable-decimal-float --disable-threads 
     --disable-libmudflap --disable-libssp 
@@ -25,7 +25,7 @@ configure:
     --with-gmp-include=$(pwd)/gmp --with-gmp-lib=$(pwd)/gmp/.libs
 
 make_install: 
-  post: >+    
+  post: >-
     ln -vsf libgcc.a `$LFS_TGT-gcc -print-libgcc-file-name | sed 's/libgcc/&_eh/'`
 
 dependencies:
