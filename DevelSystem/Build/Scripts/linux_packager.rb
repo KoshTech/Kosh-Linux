@@ -378,43 +378,136 @@ class Packager
     end
   end
 
-  def environment_box(which_command)
-    ENV['HOME']  = KoshLinux::WORK
-#    ENV['TERM']  = 'ansi'
+  def environment
+    $HOME = KoshLinux::WORK
     ENV['BUILD'] = KoshLinux::KOSH_LINUX_ROOT
     ENV['WORK']  = KoshLinux::WORK
     ENV['TOOLS'] = KoshLinux::TOOLS
     ENV['LOGS']  = KoshLinux::LOGS
     ENV['PATH']  = "#{KoshLinux::TOOLS}/bin:/bin:/usr/bin"
 
-    environment = "env -i HOME='#{ENV['HOME']}' TERM='#{ENV['TERM']}' BUILD='#{ENV['BUILD']}' WORK='#{ENV['WORK']}' TOOLS='#{ENV['TOOLS']}' LOGS='#{ENV['LOGS']}' PATH='#{ENV['PATH']}'"
+    environment = %W! HOME='#{$HOME}' BUILD='#{ENV['BUILD']}' WORK='#{ENV['WORK']}' TOOLS='#{ENV['TOOLS']}' LOGS='#{ENV['LOGS']}' PATH='#{ENV['PATH']}' USER='#{ENV['USER']}' !
 
     file_path = "#{KoshLinux::PROFILES}/LinuxBasic.yml"
     variables = YAML::load( File.open( file_path ))['variables']
     variables.inject("") do |vars, variable|
       ENV[variable[0].upcase] = variable[1]
-      environment += " #{variable[0].upcase}='#{variable[1]}'"
+      environment << "#{variable[0].upcase}='#{variable[1]}'"
+    end
+    environment
+  end
+
+  def console_script
+    console_script =<<END_OF_CONSOLE
+#!/bin/bash
+
+HOME='#{$HOME}'
+exec env -i HOME=\"$HOME\" TERM=$TERM /bin/bash $@
+
+END_OF_CONSOLE
+  end
+
+  def environment_set
+    debug = "set -x" if @options[:debug]
+    extra_options = [
+                     "[ ! -z \"$PS1\" ] && PS1=\"`tput setaf 1; tput bold`
+[KoshLinux::Console]`tput sgr0` \\u [B]:\\V [J]:\\j [T]:\\l [L]:\\#:\\n\\w(\\$)> \"",
+                     "set +h",
+                     "umask 022",
+                    ]
+
+    # Create and update .bashrc and console files
+    @bashrc_path=File.join(KoshLinux::WORK, '.bashrc')
+    console_path=File.join(KoshLinux::WORK, 'console')
+    begin
+      bashrc_file = File.open(@bashrc_path, 'w') do |bashrc|
+        extra_options.each do |options|
+          bashrc.write("#{options}\n")
+        end
+        environment.each do |env|
+          bashrc.write("export #{env}\n")
+        end
+      end
+      console_file = File.open(console_path, 'w') do |console|
+        console.write(console_script)
+        console.chmod(0754)
+      end
+    end
+    true
+  end
+
+  def variables_package
+    unless @package['variables'].nil?
+      set_variables=@package['variables']['set'] unless @package['variables']['set'].nil?
+      unset_variables=@package['variables']['unset'] unless @package['variables']['unset'].nil?
+      set_vars = set_variables.split("\n").collect do |variable|
+        variable_and_condition = variable.split(':')
+        condition = variable_and_condition[1].to_s+" && " unless variable_and_condition[1].nil?
+        condition.to_s + "export " + variable_and_condition[0].to_s
+      end unless set_variables.nil?
+      unset_vars = unset_variables.split("\n").collect do |variable|
+        variable_and_condition = variable.split(':')
+        condition = variable_and_condition[1].to_s+" && " unless variable_and_condition[1].nil?
+        condition.to_s + "unset " + variable_and_condition[0].to_s
+      end unless unset_variables.nil?
+    end
+    return set_vars, unset_vars
+  end
+
+  def last_command_script(which_command)
+    set_vars, unset_vars = variables_package
+    last_command_script =
+      <<LAST_COMMAND
+#!/bin/bash
+
+if [ -n "#{@bashrc_path}" ]; then . "#{@bashrc_path}"; fi
+
+## VARIABLES
+#{set_vars.join("\n") unless set_vars.nil?}
+#{unset_vars.join("\n") unless unset_vars.nil?}
+## END VARIABLES
+#{ "set -x" if @options[:debug] }
+#{ "export" if @options[:debug] }
+#{ "echo \"BEGIN COMMANDS>>>\"" if @options[:debug] }
+## BEGIN COMMAND
+#{which_command}
+## END COMMAND
+
+LAST_COMMAND
+  end
+
+  def environment_box(which_command, log_file)
+    environment_set
+    last_command_path="#{$HOME}/last_command.sh"
+    last_command_script=last_command_script(which_command)
+    File.open(last_command_path, 'w') do |last_command|
+      last_command.write(last_command_script)
+      last_command.chmod(0754)
     end
 
-    extra_options = ""
-    extra_options += "set -x; " if @options[:debug]
-    extra_options += "set +h; "
-    extra_options += "umask 022; "
-    command_line = "#{extra_options} #{which_command}"
-    puts "Command Line: #{command_line}" if @options[:debug]
+    command_line = "#{last_command_path}"
+    formated_commands=which_command.split("\n").collect{|line|"# ".green+line.pur+"\n"}.join("  ")
+    formated_commands="  "+formated_commands
+    full_formated_commands=last_command_script.split("\n").collect{|line|"# ".green+line.pur+"\n"}.join("  ")
+    full_formated_commands="  "+full_formated_commands
+    puts "#{'#'.green}#{'=> Commands:'.yellow}\n#{formated_commands}" if @options[:debug]
     spinner true
-    %x[exec #{environment} bash -c "#{command_line}" ]
+    %x[ exec env -i HOME=$HOME TERM=$TERM /bin/bash --rcfile #{@bashrc_path} #{command_line} 2>#{ENV['LOGS']}/#{log_file}.err 1>#{ENV['LOGS']}/#{log_file}.out ]
     command_status = $?.exitstatus
     spinner false
-    puts "Command exitstatus(#{command_status})"
+    status_cmd="#==> Commands exitstatus(#{command_status})"
     unless command_status.nil?
       if command_status > 0
-        puts "Command line was: #{command_line}"
+        puts status_cmd.yellow
+        puts "#==] Commands was:\n#{full_formated_commands}".red
         result = nil
       else
+        puts status_cmd.green
         result = true
       end
     else
+      puts status_cmd.red
+      puts "#==] Unknown error".red
       result = nil
     end
     result
