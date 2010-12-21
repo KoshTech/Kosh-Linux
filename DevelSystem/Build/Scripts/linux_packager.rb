@@ -536,11 +536,9 @@ LAST_COMMAND
 
   def spinner(action)
     theme = {
-      'greater' => %W{ #{""} [ [= [=] [==] [===] [====] [=====] [======] [=======] [========] [=========] [==========] [=========] [========] [=======] [======] [=====] [====] [===] [==] [=] [= [ #{""} },
-      'chars' => %w{ (|) (/) (-) (\\) },
-      'chars_inv' => %w{ (\\) (-) (/) (|) },
-      'signs' => %w{ [>---] [->--] [-->-] [--->] [----] [---<] [--<-] [-<--] [<---] [----] },
-      'ball' => %w{ o___ _o__ __o_ ___o ___O __O_ _O__ O___ },
+      'chars' => %w{ (| (/ (- (\\ },
+      'chars_inv' => %w{ \\) -) /) |) },
+      'signs' => %w{ ---------- >--------- ->-------- -->------- --->------ ---->----- ----->---- ------>--- ------->-- -------->- ---------> ---------- ---------< --------<- -------<-- ------<--- -----<---- ----<----- ---<------ --<------- -<-------- <--------- },
     }
 
     @spinner = action
@@ -548,9 +546,10 @@ LAST_COMMAND
       sleep 3
       cursor_off=`tput civis`
       cursor_on =`tput cnorm`
+      columns = 76
+      columns = ENV['COLUMNS'] unless ENV['COLUMNS'].nil?
       while @spinner
-        output = "#{theme['chars'][0]}#{theme['ball'][0]}#{theme['chars_inv'][0]}#{theme['signs'][0]}#{theme['greater'][0]}#{cursor_off}"
-        columns = 76
+        output = "[pid]:#{Process.pid}[ppid]:#{Process.ppid}#{theme['chars'][0]}#{theme['signs'][0]}#{theme['chars_inv'][0]}#{cursor_off}"
         times = columns - output.size
         times.times do
           output += "\s"
@@ -563,6 +562,7 @@ LAST_COMMAND
           item[1].push item[1].shift
         end
       end
+      columns.times { $stderr.print "\s" }
       $stderr.print "\r#{cursor_on}"
     } if @spinner_thr.nil? or not @spinner_thr.alive?
     @spinner_thr.join unless @spinner
