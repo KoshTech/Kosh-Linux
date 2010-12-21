@@ -239,6 +239,7 @@ class Packager
     unless pack_folder == unpack_folder
       puts "@===> Renaming file: #{pack_path} => #{unpack_path}"
       FileUtils.cd(KoshLinux::WORK)
+      FileUtils.rm_r(unpack_folder) if File.exists?(unpack_folder)
       FileUtils.mv(pack_folder, unpack_folder)
       FileUtils.cd(KoshLinux::KOSH_LINUX_ROOT)
     end
