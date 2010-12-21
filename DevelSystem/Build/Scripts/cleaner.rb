@@ -29,6 +29,7 @@ class Cleaner
 
   def Cleaner.clean_tools
     puts "Cleaning up tools: "
+    puts "Retored onwership for user: #{ENV['USER']} " if system("sudo chown -R #{ENV['USER']} #{KoshLinux::WORK}/tools")
     Dir.glob("#{KoshLinux::TOOLS}/*") do |folder|
       puts "Removing folder: #{folder}"
       FileUtils.rm_rf(folder)
