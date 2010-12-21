@@ -340,13 +340,18 @@ class Packager
     return if package[action].nil?
     current_hook = package[action][hook]
     unless current_hook.nil? || current_hook.empty?
-      compile_path = package['info']['compile_folder']
-      compile_path = pack_unpack_folder(package) if compile_path.nil?
-      FileUtils.cd("#{KoshLinux::WORK}/#{compile_path}")
-      log_file = "$LOGS/#{action}-#{hook}_#{package['name']}"
-      output_log = " 2>#{log_file}.err 1>#{log_file}.out" 
-      result = environment_box(current_hook + output_log)
       puts "#{'#'.green}#{'_=> Running hook('.yellow}#{package['name'].dark_blue}::#{action.blue}.#{hook.green}#{')'.yellow}"
+      unpack_folder = pack_unpack_folder(package)
+      compile_folder = package['info']['compile_folder']
+      compile_folder = unpack_folder if compile_folder.nil?
+      case action
+      when 'unpack', 'patch'
+        cd_path = "cd #{KoshLinux::WORK}/#{unpack_folder}\n"
+      else
+        cd_path = "cd #{KoshLinux::WORK}/#{compile_folder}\n"
+      end
+      log_file = "#{action}-#{hook}_#{package['name']}"
+      result = environment_box(cd_path + current_hook, log_file)
       puts "#{'#'.green}#{'_=> End hook('.yellow}#{action.blue}.#{hook.green}) ==__"
       abort(" -==] Exiting hook(#{package['name']}:#{action}.#{hook})") if result.nil?
     end
