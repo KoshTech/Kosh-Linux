@@ -17,22 +17,16 @@ info:
   compile_folder: 
 
 configure:
-  do: no
-  pre: >
-    case `uname -m` 
-      in i?86)
-        ln -svf x86 arch/i686;;
-    esac;
+  prefix: no
+  pre: >-
     make mrproper
-
-  post: >
+  do: >-
     make headers_check
 
 make:
-  do: no
-  pre: >
+  do: >-
     make INSTALL_HDR_PATH=dest headers_install
-  post: >
+  post: >-
     cp -rv dest/include/* $TOOLS/include 
 
 make_install:
