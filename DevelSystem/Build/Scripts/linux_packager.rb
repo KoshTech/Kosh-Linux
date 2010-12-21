@@ -187,29 +187,24 @@ class Packager
       return if make_install_do === false
       options = package['make_install']['options']
       variables = package['make_install']['variables']
+      variables += " " unless variables.nil?
     else
       make_install_do = true
     end
 
     unless compile_folder.nil?
-      FileUtils.cd(compile_path)
-      puts "== make_install_package: running on compile_folder: #{compile_path}"
+      cd_path = "cd #{compile_path}\n"
       puts "*=> make_install_package: running on compile_folder: #{compile_path}"
     else
-      FileUtils.cd(unpack_path)
-      puts "== make_install_package: running on unpack_folder: #{unpack_path}"
+      cd_path = "cd #{unpack_path}\n"
       puts "*=> make_install_package: running on unpack_folder: #{unpack_path}"
     end
 
-    log_file = "#{KoshLinux::LOGS}/make_install_#{package['name']}"
+    log_file = "make_install_#{package['name']}"
     make_install_cmd = make_install_do === true ? "make #{options} install" : "#{make_install_do} #{options} "
-    make_install_line = "#{variables} #{make_install_cmd} 2>#{log_file}.err 1>#{log_file}.out "
-    puts "== Line of make_install: #{make_install_line}"
-    puts "Output command make install => #{log_file}"
-    make_install = environment_box(make_install_line)
-    abort("Exiting on make_install: #{package['name']}") if make_install.nil?
-    FileUtils.cd(KoshLinux::KOSH_LINUX_ROOT)
+    make_install_line = "#{cd_path}#{variables}#{make_install_cmd}"
     puts "*==> Output command make install => #{log_file}.{out,err}"
+    make_install = environment_box(make_install_line, log_file)
     abort("*==] Exiting on make_install: #{package['name']}") if make_install.nil?
     return make_install
   end
