@@ -71,21 +71,25 @@ class Packager
   end
 
   def check_dependencies(source_package)
-    puts "Checking Dependency for: #{source_package['info']['name']} "
-    puts "Recipe Dependencies: #{source_package['dependencies'].inspect}" unless source_package['dependencies'].nil? 
+    puts "*=> Checking Dependency for: #{source_package['info']['name']} ".blue
+    puts "*==> Recipe Dependencies: #{source_package['dependencies'].inspect}".dark_green unless source_package['dependencies'].nil?
+    real_package = @package
     source_package['dependencies']['build'].each do |dependency|
       package = load_package(dependency)
-      puts "Dependency->Build: #{package['info']['name']} "
-      build_package(package, "build")
-      puts "Dependency->Build->END: #{package['info']['name']}"
+      @package = package
+      puts "*==> Dependency->Build: #{package['info']['name']} ".blue
+      build_package(@package, "build")
+      puts "*==> Dependency->Build->END: #{package['info']['name']}".blue
     end unless source_package['dependencies'].nil? || source_package['dependencies']['build'].nil?
     
     source_package['dependencies']['source_only'].each do |dependency|
       package = load_package(dependency)
-      puts "Dependency->Build: #{package['info']['name']} "
-      build_package(package, "source_only")
-      puts "Dependency->Build->END: #{package['info']['name']}"
+      @package = package
+      puts "*==> Dependency->Build: #{package['info']['name']} ".blue
+      build_package(@package, "source_only")
+      puts "*==> Dependency->Build->END: #{package['info']['name']}".blue
     end unless source_package['dependencies'].nil? || source_package['dependencies']['source_only'].nil?
+    @package=real_package
   end
 
   def pack_unpack_folder(package)
