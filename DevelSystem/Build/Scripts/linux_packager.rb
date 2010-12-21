@@ -154,26 +154,24 @@ class Packager
       return if make_do === false
       options = package['make']['options']
       variables = package['make']['variables']
+      variables += " " unless variables.nil?
     else
       make_do = true
     end
 
     unless compile_folder.nil?
-      FileUtils.cd(compile_path)
-      puts "== make_package: running on compile_folder: #{compile_path}"
+      cd_path = "cd #{compile_path}\n"
       puts "*=> make_package: running on compile_folder: #{compile_path}"
     else
-      FileUtils.cd(unpack_path)
+      cd_path = "cd #{unpack_path}\n"
       puts "*=> make_package: running on unpack_folder: #{unpack_path}"
     end
 
-    log_file = "#{KoshLinux::WORK}/logs/make_#{package['name']}"
+    log_file = "make_#{package['name']}"
     make_cmd = make_do === true ? 'make' : make_do
-    make_line = "#{variables} #{make_cmd} #{options} 2>#{log_file}.err 1>#{log_file}.out"
-    make = environment_box(make_line)
-    abort("Exiting on make: #{package['name']}") if make.nil?
-    FileUtils.cd(KoshLinux::KOSH_LINUX_ROOT)
+    make_line = "#{cd_path}#{variables}#{make_cmd} #{options}"
     puts "*==> Output command make => #{log_file}.{out,err}"
+    make = environment_box(make_line, log_file)
     abort("*==] Exiting on make: #{package['name']}") if make.nil?
     return make
   end
