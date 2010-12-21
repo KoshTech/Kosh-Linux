@@ -18,20 +18,23 @@ configure:
 make:
   do: no
 
+variables:
+  set: |    
+    SYSTEM_BUILD=$(cat Work/built_*)
+    BACKUP_FOLDER="$BUILD/Depot/Backup/$SYSTEM_BUILD"
+
 make_install:
-  do: >-
-    SYSTEM_BUILD=\$(cat built_*);
-    BACKUP_FOLDER="\$BUILD/Depot/Backup/\$SYSTEM_BUILD";
-    if [ ! -d "\$BACKUP_FOLDER" ]; then
-      echo 'Fazendo backup';
-      sudo mkdir -p \$BACKUP_FOLDER
-      sudo cp -va /tools/* \$BACKUP_FOLDER/ || exit 1;
+  do: |
+    if [ ! -d "$BACKUP_FOLDER" ]; then
+      echo 'Making backup';
+      sudo mkdir -p $BACKUP_FOLDER
+      sudo cp -va /tools/* $BACKUP_FOLDER/ || exit 1;
     fi;
 
-  pre: >-
-    if [ ! -f "built_*" ]; then 
-      echo 'Ajustar o backup';
-      SYSTEM_BUILD=\$(date -u +%Y%m%d%H%M%S);
-      echo "\$SYSTEM_BUILD";
-      echo "\$SYSTEM_BUILD"> "built_utc_\$SYSTEM_BUILD";
+  pre: |
+    if [ -z $SYSTEM_BUILD ]; then 
+      SYSTEM_BUILD=$(date -u +%Y%m%d%H%M%S);
+      echo "$SYSTEM_BUILD"> "built_utc_$SYSTEM_BUILD";
+    else
+      echo "Already exists build: $SYSTEM_BUILD"
     fi

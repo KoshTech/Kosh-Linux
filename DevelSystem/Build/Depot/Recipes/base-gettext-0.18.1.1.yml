@@ -17,8 +17,7 @@ info:
   patches:
 
 configure:
-  do: no
-  post: >-
+  do: >-
     cd gettext-tools &&
     ./configure --prefix=/tools --disable-shared
 
@@ -32,7 +31,6 @@ make:
     make -C src msgfmt
 
 make_install:
-  do: no
-  pre: >-
+  do: >-
     cd gettext-tools &&
     cp -v src/msgfmt /tools/bin

@@ -18,8 +18,7 @@ info:
 
 configure:
   pre: >-
-    sed -i -e '/"m4.h"/a\
-    #include <sys/stat.h>' src/path.c
+    sed -i -e '/"m4.h"/a #include <sys/stat.h>' src/path.c
 
 make_install:
   pre: >-

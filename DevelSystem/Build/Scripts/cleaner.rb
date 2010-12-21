@@ -29,6 +29,7 @@ class Cleaner
 
   def Cleaner.clean_tools
     puts "Cleaning up tools: "
+    puts "Retored onwership for user: #{ENV['USER']} " if system("sudo chown -R #{ENV['USER']} #{KoshLinux::WORK}/tools")
     Dir.glob("#{KoshLinux::TOOLS}/*") do |folder|
       puts "Removing folder: #{folder}"
       FileUtils.rm_rf(folder)
@@ -43,7 +44,6 @@ class Cleaner
     folder = "#{KoshLinux::WORK}/.ccache"
     puts "Cleaning up .ccache: #{folder}"
     FileUtils.rm_rf(folder) if File.exist?(folder)
-    exit(0)
   end
   
   def Cleaner.clean_all
@@ -63,5 +63,6 @@ class Cleaner
     puts "Cleaner: #{option}"
     send("clean_#{option}")
     puts "Cleanup: end."
+    exit(0)
   end
 end
