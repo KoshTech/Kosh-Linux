@@ -368,13 +368,13 @@ class Packager
       filepath = fetch_file_download(patch_info['download'],patch_info['md5'])
       if filepath
         work_folder = "#{KoshLinux::WORK}/#{pack_unpack_folder(package)}"
-        FileUtils.cd(work_folder)
-        unless File.exist?(patch[0])
+        cd_path = "cd #{work_folder}\n"
+        unless File.exist?(File.join(work_folder, patch[0]))
           options = patch_info['options'] unless patch_info['options'].nil?
-          log_file = "$LOGS/patch_#{package['name']}"
-          command_for_patch = "patch #{options} -i #{filepath} 2>#{log_file}.err 1>#{log_file}.out && echo 'patched' >#{patch[0]}"
-          result = environment_box(command_for_patch)
           puts " _=> Appling patch: #{patch_info['name']} ==__"
+          log_file = "patch_#{package['name']}"
+          command_for_patch = "#{cd_path} patch #{options} -i #{filepath} && echo 'patched' >#{patch[0]}"
+          result = environment_box(command_for_patch, log_file)
           abort(" _=> Error appling patch (#{package['name']}:#{patch_info['name']})") if result.nil?
         else
           puts " _=> No needed patch: #{patch_info['name']}"
