@@ -111,17 +111,18 @@ class Packager
       return if configure_do === false
       options = package['configure']['options']
       variables = package['configure']['variables']
+      variables += " " unless variables.nil?
     else
       configure_do = true
       configure_prefix = true
     end
 
     unless compile_folder.nil?
-      FileUtils.cd(compile_path)
+      cd_path = "cd #{compile_path}\n"
       compile_path = "../#{unpack_folder}"
       puts "*=> configure_package: compile_path:{#{compile_path}} with unpack_folder:{#{unpack_path}}"
     else
-      FileUtils.cd(unpack_path)
+      cd_path = "cd #{unpack_path}\n"
       puts "*=> configure_package: running on unpack_path:{#{unpack_path}} with ."
       compile_path = "."
     end
@@ -133,12 +134,11 @@ class Packager
     else
       prefix = ""
     end
-    log_file = "#{KoshLinux::LOGS}/configure_#{package['name']}"
+    log_file = "configure_#{package['name']}"
     configure_cmd = configure_do === true ? "#{compile_path}/configure" : configure_do
-    configure_line = "#{variables} #{configure_cmd} #{prefix} #{options} 2>#{log_file}.err 1>#{log_file}.out"
-    configure = environment_box(configure_line)
-    FileUtils.cd(KoshLinux::KOSH_LINUX_ROOT)
+    configure_line = "#{cd_path}#{variables}#{configure_cmd} #{prefix} #{options}"
     puts "*==> Output command configure => #{log_file}.{out,err}"
+    configure = environment_box(configure_line, log_file)
     abort("*==] Exiting on configure: #{package['name']}") if configure.nil?
     return configure
   end
