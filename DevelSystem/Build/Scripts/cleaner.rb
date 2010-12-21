@@ -43,7 +43,6 @@ class Cleaner
     folder = "#{KoshLinux::WORK}/.ccache"
     puts "Cleaning up .ccache: #{folder}"
     FileUtils.rm_rf(folder) if File.exist?(folder)
-    exit(0)
   end
   
   def Cleaner.clean_all
@@ -63,5 +62,6 @@ class Cleaner
     puts "Cleaner: #{option}"
     send("clean_#{option}")
     puts "Cleanup: end."
+    exit(0)
   end
 end
