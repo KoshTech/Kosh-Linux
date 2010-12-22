@@ -2,7 +2,6 @@ require 'net/http'
 require 'md5'
 require 'fileutils'
 require 'open-uri'
-require File.join(KoshLinux::KOSH_LINUX_ROOT,'Vendor','ruby-progressbar','lib','progressbar')
 
 class Packager
   attr_accessor :config, :options
@@ -304,6 +303,7 @@ class Packager
   end
 
   def fetch_file_download(url_for_download, checksum, file_name=nil)
+    KoshLinux::require_vendor('progressbar', 'ruby-progressbar')
     uri = URI.parse(url_for_download)
     filename = file_name.nil? ? File.basename(uri.path) : file_name
     filepath = "#{KoshLinux::SOURCES}/#{filename}"
