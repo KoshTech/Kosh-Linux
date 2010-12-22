@@ -19,6 +19,7 @@ class Packager
     @packages = @config.profile_settings['packages']
     @spinner_thr = nil
     @spinner = false
+    @folders_for_clear = Array.new
   end
 
   def build_all
@@ -67,6 +68,7 @@ class Packager
       make_install_package(package)
       hook_package('make_install', 'post', package)
     end
+    clear_package(package, operation)
     package_status(package, 'ok', 'Package built!')
   end
 
@@ -540,6 +542,21 @@ LAST_COMMAND
       FileUtils.rm_f(filename)
       return true
     end
+  end
+
+  def clear_package(package, operation)
+    unpack_folder  = pack_unpack_folder(package)
+    compile_folder = package['info']['compile_folder']
+    [ unpack_folder, compile_folder ].compact.each do |folder|
+      @folders_for_clear << folder
+    end
+    @folders_for_clear.compact.each do |folder|
+      clean_folder = File.join(KoshLinux::WORK, folder)
+       if File.exist?(clean_folder)
+         puts "*===> Cleaning-up folder used for build package: #{folder}".dark_green
+         FileUtils.rm_rf(clean_folder)
+       end
+    end if operation == "run"
   end
 
   def spinner(action)
