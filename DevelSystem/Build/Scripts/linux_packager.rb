@@ -511,7 +511,7 @@ LAST_COMMAND
     full_formated_commands="  "+full_formated_commands
     puts "#{'#'.green}#{'=> Commands:'.yellow}\n#{formated_commands}" if @options[:debug]
     spinner true
-    %x[ exec env -i HOME=$HOME TERM=$TERM /bin/bash --rcfile #{@bashrc_path} #{command_line} 2>#{ENV['LOGS']}/#{log_file}.err 1>#{ENV['LOGS']}/#{log_file}.out ]
+    %x[ exec env -i HOME=$HOME TERM=$TERM /bin/bash #{command_line} 2>#{ENV['LOGS']}/#{log_file}.err 1>#{ENV['LOGS']}/#{log_file}.out ]
     command_status = $?.exitstatus
     spinner false
     status_cmd="#==> Commands exitstatus(#{command_status})"
