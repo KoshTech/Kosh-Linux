@@ -36,6 +36,10 @@ END_OF_DESCRIPTION
   opts.on("-f", "--force-rebuild", "Rebuild already built package") do |rebuild|
     options[:force_rebuild] = true
   end
+
+  opts.on("--cc", "--ccache", "Use ccache in build process if installed") do
+    options[:ccache] = true
+  end
 end.parse!
 
 require 'kosh_linux'
