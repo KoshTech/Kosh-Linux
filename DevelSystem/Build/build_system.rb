@@ -37,6 +37,10 @@ END_OF_DESCRIPTION
     options[:force_rebuild] = true
   end
 
+  opts.on("--recipes=recipe[,recipe]", "Build specified Recipies, use comma for more.") do |recipes|
+    options[:recipes] = recipes
+  end
+
   opts.on("--cc", "--ccache", "Use ccache in build process if installed") do
     options[:ccache] = true
   end
@@ -47,7 +51,11 @@ KoshLinux.timer do
   linux = KoshLinux.new(options)
   linux.cleaner if options.include?(:clear)
   if linux.config.ok?
-    puts "Starting up..."
-    linux.packager.build_all
+    if options[:recipes]
+      puts "Preprare for build: #{options[:recipes].inspect}"
+      linux.packager.build_packages(options[:recipes])
+    else
+      linux.packager.build_all
+    end
   end
 end

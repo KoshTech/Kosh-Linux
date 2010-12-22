@@ -29,6 +29,15 @@ class Packager
     end
   end
 
+  def build_packages(package_list)
+    recipes = package_list.split(',')
+    recipes.each do |recipe|
+      puts "Building package: #{recipe.green}".dark_green
+      @package = load_package(recipe)
+      build_package(@package)
+    end
+  end
+
   def build_package(package, operation="run")
     if package_status(package) && @options[:force_rebuild] == false
       printf("%s %s %s\n", "*=> Package".dark_blue, package['name'].dark_green, "already built".dark_blue)
