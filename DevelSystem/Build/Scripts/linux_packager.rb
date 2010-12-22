@@ -81,7 +81,7 @@ class Packager
       build_package(@package, "build")
       puts "*==> Dependency->Build->END: #{package['info']['name']}".blue
     end unless source_package['dependencies'].nil? || source_package['dependencies']['build'].nil?
-    
+
     source_package['dependencies']['source_only'].each do |dependency|
       package = load_package(dependency)
       @package = package
@@ -90,6 +90,7 @@ class Packager
       puts "*==> Dependency->Build->END: #{package['info']['name']}".blue
     end unless source_package['dependencies'].nil? || source_package['dependencies']['source_only'].nil?
     @package=real_package
+    puts "*=> Dependencies for #{source_package['info']['name']} ".blue + "Done.".dark_green
   end
 
   def pack_unpack_folder(package)
@@ -127,7 +128,7 @@ class Packager
       compile_path = "."
     end
 
-    if configure_prefix 
+    if configure_prefix
       prefix = "--prefix=$TOOLS"
     elsif configure_prefix != false
       prefix = configure_prefix
