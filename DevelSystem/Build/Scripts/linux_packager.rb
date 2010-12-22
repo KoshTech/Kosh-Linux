@@ -39,7 +39,7 @@ class Packager
   end
 
   def build_package(package, operation="run")
-    if package_status(package) && @options[:force_rebuild] == false
+    if operation == 'run' and package_status(package) and not @options[:force_rebuild]
       printf("%s %s %s\n", "*=> Package".dark_blue, package['name'].dark_green, "already built".dark_blue)
       return true
     end
