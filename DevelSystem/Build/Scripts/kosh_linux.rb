@@ -48,6 +48,11 @@ class KoshLinux
     puts "Elapsed Time: #{@@humanized_time}"
   end
 
+  def KoshLinux.require_vendor(library, folder)
+    require File.join(KOSH_LINUX_ROOT, 'Vendor', folder, 'lib', library)
+  end
+end
+
 class String
     def red; colorize(self, "\e[1m\e[31m"); end
     def green; colorize(self, "\e[1m\e[32m"); end
