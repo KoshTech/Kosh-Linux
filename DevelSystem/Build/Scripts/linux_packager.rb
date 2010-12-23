@@ -487,32 +487,26 @@ END_OF_CONSOLE
     return set_vars, unset_vars
   end
 
-  def last_command_script(which_command)
-    set_vars, unset_vars = variables_package
-    last_command_script =
-      <<LAST_COMMAND
-#!/bin/bash
-
-if [ -n "#{@bashrc_path}" ]; then . "#{@bashrc_path}"; fi
-
-## VARIABLES
-#{set_vars.join("\n") unless set_vars.nil?}
-#{unset_vars.join("\n") unless unset_vars.nil?}
-## END VARIABLES
-#{ "set -x" if @options[:debug] }
-#{ "export" if @options[:debug] }
-#{ "echo \"BEGIN COMMANDS>>>\"" if @options[:debug] }
-## BEGIN COMMAND
-#{which_command}
-## END COMMAND
-
-LAST_COMMAND
-  end
-
   def environment_box(which_command, log_file)
+    KoshLinux::require_vendor('shell_script_builder')
     environment_set
     last_command_path="#{$HOME}/last_command.sh"
-    last_command_script=last_command_script(which_command)
+    last_command_script=shell do |sh|
+      sh.if :file? => @bashrc_path do |bashrc|
+        bashrc.source @bashrc_path
+      end
+      set_vars, unset_vars = variables_package
+      set_vars.each do |var|
+        sh << var
+      end unless set_vars.nil?
+      unset_vars.each do |var|
+        sh << var
+      end unless unset_vars.nil?
+      sh.set_x if @options[:debug]
+      sh.export if @options[:debug]
+      sh.echo "'BEGIN COMMANDS>>>'" if @options[:debug]
+      sh << which_command
+    end
     File.open(last_command_path, 'w') do |last_command|
       last_command.write(last_command_script)
       last_command.chmod(0754)

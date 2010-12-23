@@ -1,0 +1,6 @@
+History.txt
+Manifest.txt
+README.txt
+Rakefile
+lib/shell_script_builder.rb
+test/test_shell_script_builder.rb
