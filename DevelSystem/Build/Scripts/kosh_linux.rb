@@ -48,8 +48,8 @@ class KoshLinux
     puts "Elapsed Time: #{@@humanized_time}"
   end
 
-  def KoshLinux.require_vendor(library, folder)
-    require File.join(KOSH_LINUX_ROOT, 'Vendor', folder, 'lib', library)
+  def KoshLinux.require_vendor(library, folder=nil)
+    require File.join(KOSH_LINUX_ROOT, 'Vendor', "#{ folder.nil? ? library : folder }", 'lib', library)
   end
 end
 
