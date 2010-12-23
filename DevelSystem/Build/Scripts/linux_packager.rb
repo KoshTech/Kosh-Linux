@@ -22,6 +22,10 @@ class Packager
   end
 
   def build_all
+    if @options[:paco]
+      @package = load_package('tools-paco')
+      build_package(@package)
+    end
     @packages.each do | file_name |
       @package = load_package(file_name)
       build_package(@package)
@@ -75,6 +79,16 @@ class Packager
       hook_package('make_install', 'pre', package)
       make_install_package(package)
       hook_package('make_install', 'post', package)
+      if @options[:paco] and not package['name'] == 'tools-paco'
+        command = %Q! PACOLIST=$(paco -af); time find
+        #{KoshLinux::WORK}/tools -path #{KoshLinux::WORK}/tools/paco
+        -prune -or -print | while read name; do if [ -z "$(echo "$PACOLIST" | grep $name)" ]; then echo $name; fi; done | paco -lp+ #{@package['name']} !
+#        command = %Q! find #{KoshLinux::WORK}/tools -path #{KoshLinux::WORK}/tools/paco -prune -or -print | while read name; do [ -z "$(file $name|grep \"$name: directory\")" ] && [ -z "$(paco -q $name | cut -d : -f 2)" ] && echo $name; done | paco -lp+ #{@package['name']} !
+        
+        log_name = "paco_#{package['name']}"
+        puts "Paco command: #{command}"
+        environment_box(command, log_name)
+      end
     end
     clear_package(package, operation)
     package_status(package, 'ok', 'Package built!')

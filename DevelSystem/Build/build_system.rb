@@ -44,6 +44,10 @@ END_OF_DESCRIPTION
   opts.on("--cc", "--ccache", "Use ccache in build process if installed") do
     options[:ccache] = true
   end
+
+  opts.on("-p", "--paco", "Build and use paco(pacKAGE oRGANIZER) for log package install") do |paco|
+    options[:paco] = true
+  end
 end.parse!
 
 require 'kosh_linux'

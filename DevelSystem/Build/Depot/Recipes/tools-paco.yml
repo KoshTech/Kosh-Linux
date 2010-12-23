@@ -1,0 +1,18 @@
+
+info:
+  name: Paco
+  version: 2.0.9
+  filename: paco-2.0.9.tar.bz2
+  size: "328,937"
+  download: http://downloads.sourceforge.net/project/paco/paco/2.0.9/paco-2.0.9.tar.bz2
+  homepage: http://paco.sourceforge.net/
+  description: "Install paco on system for log installations"
+  md5: d2debbea1b11156470f7fd849bb93c80
+  packer: tar.bz2
+  pack_folder: paco-2.0.9
+
+configure:
+  options: --disable-gpaco --disable-scripts --with-paco-logdir=/tools/paco 
+
+make_install:
+  post: make logme
