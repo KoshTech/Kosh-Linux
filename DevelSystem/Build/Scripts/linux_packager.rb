@@ -1,7 +1,8 @@
 require 'net/http'
 require 'md5'
 require 'fileutils'
-require 'open-uri'
+open_uri_folder = RUBY_VERSION[0,3] == '1.8' ? 'ruby-1.8/' : ''
+require "#{open_uri_folder}open-uri"
 
 class Packager
   attr_accessor :config, :options
