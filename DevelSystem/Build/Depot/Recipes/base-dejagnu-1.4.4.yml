@@ -22,6 +22,9 @@ info:
       download: http://www.linuxfromscratch.org/patches/lfs/6.7/dejagnu-1.4.4-consolidated-1.patch
       md5: b9949a8abcc210d1dc9cdda06821c199
 
+variables:
+  unset: MAKEFLAGS
+
 make_install:
   post: "make check"
 
