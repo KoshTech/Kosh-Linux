@@ -29,7 +29,7 @@ To build Kosh Linux Tool Chain, you need these packages installed on your system
  bash binutils bison bzip2 coreutils diff gawk gcc libc6 grep gzip m4 make patch perl sed tar
 texinfo git ruby build-essential
 
-Note: The dependence list are base on builds under Debian/Ubuntu systems. In that systems, the follow line can install all necessary packages:
+Note: The dependence list are based on builds under Debian/Ubuntu systems. In that systems, the follow line can install all necessary packages:
 
  $ apt-get install bash binutils bison bzip2 coreutils diff gawk gcc libc6 grep gzip m4 make patch
 perl sed tar texinfo git ruby build-essential
