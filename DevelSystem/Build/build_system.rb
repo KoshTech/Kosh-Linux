@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 $VERBOSE=true
-$:.unshift 'Scripts'
+$:.unshift 'Scripts', 'Vendor'
 
 require 'optparse'
 options = {}
