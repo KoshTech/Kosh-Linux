@@ -1,0 +1,79 @@
+
+Host used to test and build the Kosh Linux Toolchain, based on Linux From 
+Scratch Book. All host informations are extracted from these commands:
+
+ $ cat /proc/cpuinfo
+ $ lsb_release -a
+ $ uname -a
+
+
+Host: Megatron
+Type: Worker notebook
+SO: Ubuntu natty 11.04 - GNU/Linux 2.6.37-11-generic #25 SMP x86_64
+Hardware:
+  CPU: 2 X Intel(R) Core(TM)2 Duo CPU T6400 @ 2.00GHz
+    cpu MHz: 2000.000
+    cache size: 2048 KB
+  MEM: 4 GB
+ 
+Last build info:
+  Time: 
+
+Logs: 
+
+
+Host: Chonos
+Type:  Worker notebook
+Hardware:
+  CPU: 
+    cpu MHz:
+    cache size:
+  MEM: 
+  
+Last build info:
+  Time: 
+
+Logs:
+
+
+Host: Worker1
+Type: Tasks Virtual Server
+SO: Debian Squeeze - GNU/Linux 2.6.26-1-xen-amd64 #1 SMP x86_64
+Hardware:
+  CPU: 4 X Intel(R) Xeon(R) CPU X3450 @ 2.67GHz
+    cpu MHz: 2659.982
+    cache size: 8192 KB
+  MEM: 768 MB
+
+Last build info:
+  Time: 
+
+Logs:
+
+
+Host: Harvey-Dent
+Type: Worker notebook
+Hardware:
+  CPU: 
+    cpu MHz:
+    cache size:
+  MEM: 
+
+Last build info:
+  Time: 
+
+Logs:
+
+
+Host: 
+Hardware:
+  CPU: 
+    cpu MHz:
+    cache size:
+  MEM: 
+
+Last build info
+  Time: 
+
+Logs:
+
