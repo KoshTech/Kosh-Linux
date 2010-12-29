@@ -162,6 +162,7 @@ class Packager
     end
     clear_package(package, operation) unless optional_action?('clear')
     package_status(package, 'ok', 'Package built!')
+    exit if options[:stop_one] && operation == 'run'
   end
 
   def check_dependencies(source_package)

@@ -53,6 +53,10 @@ END_OF_DESCRIPTION
   opts.on("-o", "--optional [auto,yes,no]", "Optional features on Recipe, Default:auto") do |optional|
     options[:optional] = optional.nil? ? 'auto' : optional
   end
+
+  opts.on("-s", "--stop-one", "Stop after build one Recipe") do |stop_one|
+    options[:stop_one] = true
+  end
 end.parse!
 
 require 'kosh_linux'
