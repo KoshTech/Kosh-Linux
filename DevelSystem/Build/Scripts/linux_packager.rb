@@ -29,17 +29,89 @@ class Packager
     end
     @packages.each do | file_name |
       @package = load_package(file_name)
-      build_package(@package)
+      build_package(@package) unless optional_package?
     end
   end
 
   def build_packages(package_list)
     recipes = package_list.split(',')
     recipes.each do |recipe|
-      puts "Building package: #{recipe.green}".dark_green
       @package = load_package(recipe)
-      build_package(@package)
+      puts "Building package: #{recipe.green}".dark_green unless optional_package?
+      build_package(@package) unless optional_package?
     end
+  end
+  
+  # Check if Recipe is Optional, This is a feature 
+  def optional_package?
+    optional=false
+    if @package['info'].include?('optional')
+      optional=true
+      case options[:optional]
+      when 'auto'
+        optional = true  if @package['info']['optional'] == true
+        optional = false if @package['info']['optional'] == 'recommended'
+        optional = false if @package['info']['optional'] == false
+      when 'no'
+        if @package['info']['optional'] == false
+          optional = false
+        else
+          optional = true
+        end
+      when 'yes'
+        optional = false
+      end
+    end
+    return optional
+  end
+
+  # Check if Action is Optional for Recipe
+  def optional_action?(action)
+    optional=false
+    optional_action=@package[action].nil? ? [] : @package[action]
+    if optional_action.include?('optional')
+      optional=true
+      case options[:optional]
+      when 'no'
+        if optional_action['optional'] == false
+          optional = false
+        else
+          optional = true
+        end
+      when 'yes'
+        optional = false
+      else
+        optional = true  if optional_action['optional'] == true
+        optional = false if optional_action['optional'] == 'recommended'
+        optional = false if optional_action['optional'] == false
+      end
+    end
+    return optional
+  end
+
+  # Check if hook is Optional for Recipe
+  def optional_hook?(action, hook)
+    optional=false
+    optional_hook=@package[action][hook].nil? ? [] : @package[action][hook] unless @package[action].nil?
+    optional_hook=[] if optional_hook.nil?
+    if optional_hook.include?('optional')
+      optional=true
+      case options[:optional]
+      when 'no'
+        if optional_hook['optional'] == false
+          optional = false
+        else
+          optional = true
+        end
+      when 'yes'
+        optional = false
+      else
+        optional = true  if optional_hook['optional'] == true
+        optional = false if optional_hook['optional'] == 'recommended'
+        optional = false if optional_hook['optional'] == false
+      end
+    end
+    return optional
   end
 
   def build_package(package, operation="run")
@@ -48,38 +120,38 @@ class Packager
       return true
     end
 
-    fetch_file(package)
+    fetch_file(package) unless optional_action?('fetch')
 
-    hook_package('unpack', 'pre', package)
+    hook_package('unpack', 'pre', package) unless optional_hook?('fetch','pre')
     unless package['unpack'].nil?
       unpack_file(package) unless package['unpack']['do'] == false
     else
       unpack_file(package)
-    end
-    hook_package('unpack', 'post', package)
+    end unless optional_action?('unpack')
+    hook_package('unpack', 'post', package) unless optional_hook?('unpack','post')
 
-    hook_package('patch', 'pre', package)
-    patch_package(package)
-    hook_package('patch', 'post', package)
+    hook_package('patch', 'pre', package) unless optional_hook?('patch','pre')
+    patch_package(package) unless optional_action?('patch')
+    hook_package('patch', 'post', package) unless optional_hook?('patch','post')
 
     unless package['dependencies'] == false
-      check_dependencies(package)
+      check_dependencies(package) unless optional_action?('dependencies')
     end
 
     if operation == "build" || operation == "run"
-      hook_package('configure', 'pre', package)
-      configure_package(package)
-      hook_package('configure', 'post', package)
+      hook_package('configure', 'pre', package) unless optional_hook?('configure','pre')
+      configure_package(package) unless optional_action?('configure')
+      hook_package('configure', 'post', package) unless optional_hook?('configure','post')
 
-      hook_package('make', 'pre', package)
-      make_package(package)
-      hook_package('make', 'post', package)
+      hook_package('make', 'pre', package) unless optional_hook?('make','pre')
+      make_package(package) unless optional_action?('make')
+      hook_package('make', 'post', package) unless optional_hook?('make','post')
     end
 
     unless operation=="source_only"
-      hook_package('make_install', 'pre', package)
-      make_install_package(package)
-      hook_package('make_install', 'post', package)
+      hook_package('make_install', 'pre', package) unless optional_hook?('make_install','pre')
+      make_install_package(package) unless optional_action?('make_install')
+      hook_package('make_install', 'post', package) unless optional_hook?('make_install','post')
       if @options[:paco] and not package['name'] == 'tools-paco'
         command = %Q! PACOLIST=$(paco -afz); time find #{KoshLinux::WORK}/tools -path #{KoshLinux::WORK}/tools/paco -prune -or -print | while read name; do if [ -z "$(echo "$PACOLIST" | grep $name)" ]; then echo $name; fi; done | paco -lp+ #{@package['name']} !
 #        command = %Q! find #{KoshLinux::WORK}/tools -path #{KoshLinux::WORK}/tools/paco -prune -or -print | while read name; do [ -z "$(file $name|grep \"$name: directory\")" ] && [ -z "$(paco -q $name | cut -d : -f 2)" ] && echo $name; done | paco -lp+ #{@package['name']} !
@@ -88,7 +160,7 @@ class Packager
         environment_box(command, log_name)
       end
     end
-    clear_package(package, operation)
+    clear_package(package, operation) unless optional_action?('clear')
     package_status(package, 'ok', 'Package built!')
   end
 

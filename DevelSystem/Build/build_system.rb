@@ -48,6 +48,11 @@ END_OF_DESCRIPTION
   opts.on("-p", "--paco", "Build and use paco(pacKAGE oRGANIZER) for log package install") do |paco|
     options[:paco] = true
   end
+
+  options[:optional] = 'auto' # Default for auto
+  opts.on("-o", "--optional [auto,yes,no]", "Optional features on Recipe, Default:auto") do |optional|
+    options[:optional] = optional.nil? ? 'auto' : optional
+  end
 end.parse!
 
 require 'kosh_linux'
