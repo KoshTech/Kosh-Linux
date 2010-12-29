@@ -5,6 +5,7 @@ info:
   name: Backup System
   homepage: http://koshlinux.org/
   description: "Recipe for backup the new built system."
+  optional: recommended
 
 fetch:
   do: no
