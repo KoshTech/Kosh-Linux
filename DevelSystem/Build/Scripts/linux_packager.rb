@@ -29,6 +29,7 @@ class Packager
     end
     @packages.each do | file_name |
       @package = load_package(file_name)
+      puts "Skiping Package, you don't want optional Package. (#{@package['name']})" if optional_package?
       build_package(@package) unless optional_package?
     end
   end
