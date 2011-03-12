@@ -1,0 +1,35 @@
+NOTE:This is a work in progress.
+
+* To Do list of KoshLinux Builder [0/2]
+** TODO Revise and transform more generic Builder               :refactoring:
+** TODO [0/4] Create new classes representing               :builder:classes:
+   - Create series of classes for representing the actual state of application
+
+*** TODO [50%] Recipe class
+    - Create class that represents and build the Recipe
+      * build - Call for action_* methods for build the entire Recipe
+      * etc.
+
+*** TODO [70%] Archiver class
+    - Class that represents and manage the archives sources of Recipe:
+      * unpack - Unpack the archive in SOURCES_PATH
+      * create - Create archives for distributing
+      * etc
+
+*** TODO [90%] Downloader class
+    - Class that manage and retrieve archive from network
+      * fetch - Retrive file from network and store file in ARCHIVES_PATH
+      * etc
+
+*** TODO Logr
+    - Module for mange the messages from Application and Recipes
+
+* For build the Toolchian [2/2]
+** DONE Build Recipes from build-* to base-*
+** DONE [100%] Optional fetature
+*** This feature consists classify actions and Recipes it self like optional for build
+    - For recipe and actions use attributes: optional=yes, optional=recommended and optional=no
+      - optional=yes, set the Recipe or Action for optional and only be used if requested on command line
+      - optional=recommended set Recipe or Action for optional in auto mode, only build Recipe if optional command line set to auto
+      - optional=no this is the default behaviour if not exist the attribute, the Recipe or Action is not optional, always build.
+
