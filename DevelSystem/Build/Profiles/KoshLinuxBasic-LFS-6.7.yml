@@ -1,6 +1,6 @@
 profile:
   name: Kosh Linux Baisc System
-  release: 2010.10.31
+  release: 2011.03.12
   
 system:
   os: Linux
@@ -49,3 +49,5 @@ packages:
   - base-stripping
   - base-changing_ownership
   - base-backup_system
+  - system-preparing_virtual_kernel_file_system
+  - system-creating_directories
