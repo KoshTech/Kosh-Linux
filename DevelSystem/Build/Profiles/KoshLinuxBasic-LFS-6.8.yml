@@ -1,0 +1,54 @@
+profile:
+  name: Kosh Linux Baisc System
+  release: 2011.03.13
+  
+system:
+  os: Linux
+  class: GNU/Linux
+  name: Kosh Linux
+  codename: Vorlon
+  logo:
+  homepage: http://koshlinux.com/
+  release: Desktop
+  version: 0.0.4
+  lsb_release: 4.0
+  lfs_release: 6.8
+  licence: CDDL 1.0 (http://www.opensource.org/licenses/cddl1.php)
+
+base_system:
+
+packages: 
+  - build-prepare
+  - build-binutils-2.21
+  - build-gcc-4.5.2
+  - build-linux-2.6.37
+  - build-glibc-2.13
+  - build-adjusts_toolchain-0.0.4
+#  - base-binutils-2.21
+#  - base-gcc-4.5.1
+#  - base-tcl-8.5.8
+#  - base-expect-5.44.1.15
+#  - base-dejagnu-1.4.4
+#  - base-ncurses-5.7
+#  - base-bash-4.1
+#  - base-bzip2-1.0.5
+#  - base-coreutils-8.5
+#  - base-diffutils-3.0
+#  - base-file-5.04
+#  - base-findutils-4.4.2
+#  - base-gawk-3.1.8
+#  - base-gettext-0.18.1.1
+#  - base-grep-2.6.3
+#  - base-gzip-1.4
+#  - base-m4-1.4.14
+#  - base-make-3.82
+#  - base-patch-2.6.1
+#  - base-perl-5.12.1
+#  - base-sed-4.2.1
+#  - base-tar-1.23
+#  - base-texinfo-4.13a
+#  - base-stripping
+#  - base-changing_ownership
+#  - base-backup_system
+#  - system-preparing_virtual_kernel_file_system
+#  - system-creating_directories
