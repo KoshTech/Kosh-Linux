@@ -30,5 +30,5 @@ make_install:
     ln -vsf libgcc.a `$LINUX_TARGET-gcc -print-libgcc-file-name | sed 's/libgcc/&_eh/'`
 
 dependencies:
-  source_only: [ build-gmp-5.0.1, build-mpfr-3.0.0, build-mpc-0.8.2 ]
+  source_only: [ build-gmp-5.0.1-2, build-mpfr-3.0.0-2, build-mpc-0.8.2-2 ]
 
