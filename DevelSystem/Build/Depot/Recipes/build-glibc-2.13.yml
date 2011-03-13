@@ -1,0 +1,44 @@
+# Kosh Linux Package File
+# Specification at: http://koshlinux.com/
+
+info:
+  name: Glibc
+  version: 2.13
+  filename: glibc-2.13.tar.bz2
+  size: "15,300"
+  homepage: http://www.gnu.org/software/libc/
+  description: "The Glibc package contains the main C library. This library provides the basic routines for allocating memory, searching directories, opening and closing files, reading and writing files, string handling, pattern matching, arithmetic, and so on."
+  download: http://ftp.gnu.org/gnu/glibc/glibc-2.13.tar.bz2
+  md5: be0ea9e587f08c87604fe10a91f72afd
+  packer: tar.bz2
+  pack_folder: glibc-2.13
+  unpack_folder:
+  compile_folder: glibc-2.13_build
+  patches_options: "-Np1"
+  patches:
+    glibc_2_12_1_gcc_fix_1:
+      name: Glibc GCC Build Fix Patch
+      size: 2.5
+      download: http://www.linuxfromscratch.org/patches/lfs/6.8/glibc-2.13-gcc_fix-1.patch
+      md5: d1f28cb98acb9417fe52596908bbb9fd
+      options: "-Np1"
+
+variables:
+  unset: LD_LIBRARY_PATH:[ ! -z $LD_LIBRARY_PATH ]
+
+configure:
+  options: >-
+    --host=$LINUX_TARGET --build=$(../glibc-2.13/scripts/config.guess)
+    --disable-profile --enable-add-ons
+    --enable-kernel=2.6.22.5 --with-headers=$TOOLS/include
+    libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes
+
+  variables: >-
+    CC=$LINUX_TARGET-gcc
+
+  pre: |
+    case `uname -m`
+      in i?86) 
+      echo 'CFLAGS += -march=i486 -mtune=native' > configparms ;; 
+    esac;
+

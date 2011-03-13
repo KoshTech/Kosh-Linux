@@ -1,0 +1,27 @@
+# Kosh Linux Package File
+# Specification at: http://koshlinux.com/
+
+info:
+  name: Binutils
+  version: 2.21
+  filename: binutils-2.21.tar.bz2
+  size: "18,304"
+  homepage: http://www.gnu.org/software/binutils/
+  description: "The Binutils package contains a linker, an assembler, and other tools for handling object files. This package is used ot build a base system."
+  download: http://ftp.gnu.org/gnu/binutils/binutils-2.21.tar.bz2
+  md5: c84c5acc9d266f1a7044b51c85a823f5
+  packer: tar.bz2
+  pack_folder: binutils-2.21
+  unpack_folder: binutils-2.21_build_source
+  compile_folder: binutils-2.21_build
+  optional: no
+
+configure:
+  options: --target=$LINUX_TARGET --disable-nls --disable-werror
+  variables:
+
+make_install:
+  pre: |
+    case $(uname -m) in
+      x86_64) mkdir -pv $TOOLS/lib && ln -sv lib $TOOLS/lib64 ;;
+    esac

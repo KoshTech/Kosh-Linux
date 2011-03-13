@@ -1,0 +1,41 @@
+# Kosh Linux Package File
+# Specification at: http://koshlinux.com/
+
+info:
+  name: Linux
+  type: normal_system
+  version: 2.6.37
+  filename: linux-2.6.37.tar.bz2
+  size: "71,854"
+  homepage: http://www.kernel.org/
+  description: ""
+  download: http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.37.tar.bz2
+  md5: c8ee37b4fdccdb651e0603d35350b434
+  packer: tar.bz2
+  pack_folder: linux-2.6.37
+  unpack_folder:
+  compile_folder: 
+
+configure:
+  prefix: no
+  pre: >-
+    make mrproper
+  do: >-
+    make headers_check
+
+make:
+  do: >-
+    make INSTALL_HDR_PATH=dest headers_install
+  post: >-
+    cp -rv dest/include/* $TOOLS/include 
+
+make_install:
+  do: no
+
+build:
+
+dependencies:
+  build: [ ]
+  source_only: [ ]
+  run:
+

@@ -1,0 +1,34 @@
+# Kosh Linux Package File
+# Specification at: http://koshlinux.com/
+
+info:
+  name: GCC
+  version: 4.5.2
+  filename: gcc-4.5.2.tar.bz2
+  size: "64,774"
+  homepage: http://gcc.gnu.org/
+  description: "The GCC package contains the GNU compiler collection, which includes the C and C++ compilers. This package is used ot build a base system."
+  download: http://ftp.gnu.org/gnu/gcc/gcc-4.5.2/gcc-4.5.2.tar.bz2
+  md5: d6559145853fbaaa0fd7556ed93bce9a
+  packer: tar.bz2
+  pack_folder: gcc-4.5.2
+  unpack_folder:
+  compile_folder: gcc-4.5.2_build
+  optional: no
+
+configure:
+  options: >-
+    --target=$LINUX_TARGET --disable-nls --disable-shared --disable-multilib 
+    --disable-decimal-float --disable-threads 
+    --disable-libmudflap --disable-libssp 
+    --disable-libgomp --enable-languages=c 
+    --with-gmp-include=$(pwd)/gmp --with-gmp-lib=$(pwd)/gmp/.libs
+    --without-ppl --without-cloog
+
+make_install: 
+  post: >-
+    ln -vsf libgcc.a `$LINUX_TARGET-gcc -print-libgcc-file-name | sed 's/libgcc/&_eh/'`
+
+dependencies:
+  source_only: [ build-gmp-5.0.1, build-mpfr-3.0.0, build-mpc-0.8.2 ]
+
