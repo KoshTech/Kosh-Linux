@@ -3,3 +3,5 @@ Work/*
 TAGS
 .redcar/tags
 Profiles/LinuxBasic.yml
+Profiles/KoshLinuxBasic.yml
+Profiles/LinuxBasic-x86_64-devel.yml
