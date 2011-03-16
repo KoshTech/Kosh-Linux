@@ -27,7 +27,7 @@ make:
   do: >-
     make INSTALL_HDR_PATH=dest headers_install
   post: >-
-    cp -rv dest/include/* $TOOLS/include 
+    cp -rv dest/include/* /tools/include 
 
 make_install:
   do: no

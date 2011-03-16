@@ -12,9 +12,6 @@ info:
   md5: 0818d1763ae0c4281bcdc63cdac0b2c0
   packer: tar.bz2
   pack_folder: patch-2.6.1
-  unpack_folder:
-  compile_folder:
-  patches:
 
 make_install:
   pre: >-

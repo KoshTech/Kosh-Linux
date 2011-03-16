@@ -1,0 +1,18 @@
+# Kosh Linux Package File
+# Specification at: http://koshlinux.com/
+
+info:
+  name: Xz Utils
+  version: 5.0.1
+  filename: xz-5.0.1.tar.bz2
+  size: "982"
+  homepage: http://tukaani.org/xz
+  description: "The Xz package contains programs for compressing and decompressing files. It provides capabilities for the lzma and the newer xz compression formats. Compressing text files with xz yields a better compression percentage than with the traditional gzip or bzip2 commands."
+  download: http://tukaani.org/xz/xz-5.0.1.tar.bz2
+  md5: cb6c7a58cec4d663a395c54d186ca0c6
+  packer: tar.bz2
+  pack_folder: xz-5.0.1
+
+make_install:
+  pre: >-
+    make check

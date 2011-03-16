@@ -2,10 +2,10 @@
 # Specification at: http://koshlinux.com/
 
 info:
-  name: Adjusting the Toolchain
+  name: Build Prepare
   version: 1
   homepage: http://www.linuxfromscratch.org/lfs/view/stable/chapter05/adjusting.html
-  description: "The cross-compiler's specs file needs to be adjusted to point to the new dynamic linker in /tools. This is done by dumping the compiler's “specs” file to a location where it will look for it by default. A simple sed substitution then alters the dynamic linker that GCC will use. The principle here is to find all references to the dynamic linker file in /lib or possibly /lib64 if the host system is 64-bit capable, and adjust them to point to the new location in /tools."
+  description: "Manual actions and settings before start."
   
 fetch:
   do: no
@@ -21,5 +21,5 @@ make:
 
 make_install:
   do: |
-    mkdir -pv $WORK/usr
+    mkdir -pv /tools/usr
     

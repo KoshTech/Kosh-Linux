@@ -12,9 +12,6 @@ info:
   md5: 1a11100f3c63fcf5753818e59d63088f
   packer: tar.bz2
   pack_folder: make-3.82
-  unpack_folder:
-  compile_folder:
-  patches:
 
 make_install:
   pre: >-

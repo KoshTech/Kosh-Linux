@@ -1,0 +1,78 @@
+# Kosh Linux Package File
+# Specification at: http://koshlinux.com/
+
+info:
+  name: GCC
+  version: 4.5.2
+  filename: gcc-4.5.2.tar.bz2
+  size: "64,774"
+  homepage: http://gcc.gnu.org/
+  description: "The GCC package contains the GNU compiler collection, which includes the C and C++ compilers."
+  download: http://ftp.gnu.org/gnu/gcc/gcc-4.5.2/gcc-4.5.2.tar.bz2
+  md5: d6559145853fbaaa0fd7556ed93bce9a
+  packer: tar.bz2
+  pack_folder: gcc-4.5.2
+  unpack_folder: gcc-4.5.2_base_source
+  compile_folder: gcc-4.5.2_base
+  patches:
+    gcc_startfiles_fix_patch:
+      name: GCC Startfiles Fix Patch
+      size: 1.5
+      download: http://www.linuxfromscratch.org/patches/lfs/6.8/gcc-4.5.2-startfiles_fix-1.patch
+      md5: 799ef1971350d2e3c794f2123f247cc6
+      options: "-Np1"
+
+dependencies:
+  source_only: [ base-gmp-5.0.1-2, base-mpfr-3.0.0-2, base-mpc-0.8.2-2 ]
+  
+configure:
+  variables: CC="$LINUX_TARGET-gcc -B/tools/lib/" AR=$LINUX_TARGET-ar RANLIB=$LINUX_TARGET-ranlib
+  options: >-
+    --with-local-prefix=/tools --enable-clocale=gnu 
+    --enable-shared --enable-threads=posix 
+    --enable-__cxa_atexit --enable-languages=c,c++ 
+    --disable-libstdcxx-pch --disable-multilib 
+    --disable-bootstrap --disable-libgomp 
+    --with-gmp-include=$(pwd)/gmp --with-gmp-lib=$(pwd)/gmp/.libs 
+    --without-ppl --without-cloog
+    --host=$LINUX_TARGET
+
+make_install:
+  post: >-
+    ln -vfs gcc /tools/bin/cc &&
+    echo 'main(){}' > dummy.c && (cc dummy.c && readelf -l a.out | grep ': /tools') || exit 1;
+    rm -v dummy.c a.out
+
+patch:
+  post: |
+    cd $WORK/gcc-4.5.2_base_source
+
+    cp -v gcc/Makefile.in{,.orig};
+    sed 's@\./fixinc\.sh@-c true@' gcc/Makefile.in.orig > gcc/Makefile.in
+
+    cp -v gcc/Makefile.in{,.tmp};
+    sed 's/^T_CFLAGS =$/& -fomit-frame-pointer/' gcc/Makefile.in.tmp > gcc/Makefile.in
+
+    for file in \
+      $(find gcc/config -name linux64.h -o -name linux.h -o -name sysv4.h)
+    do
+      cp -uv $file{,.orig}
+      sed -e 's@/lib\(64\)\?\(32\)\?/ld@/tools&@g' \
+      -e 's@/usr@/tools@g' $file.orig > $file
+      echo '
+    #undef STANDARD_INCLUDE_DIR
+    #define STANDARD_INCLUDE_DIR 0
+    #define STANDARD_STARTFILE_PREFIX_1 ""
+    #define STANDARD_STARTFILE_PREFIX_2 ""' >> $file
+      touch $file.orig
+    done
+
+    case $(uname -m) in
+      x86_64)
+        for file in $(find gcc/config -name t-linux64) ; do \
+          cp -v $file{,.orig}
+          sed '/MULTILIB_OSDIRNAMES/d' $file.orig > $file
+        done
+      ;;
+    esac
+

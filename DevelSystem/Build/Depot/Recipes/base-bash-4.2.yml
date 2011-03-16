@@ -1,0 +1,26 @@
+# Kosh Linux Package File
+# Specification at: http://koshlinux.com/
+
+info:
+  name: Bash
+  version: 4.2
+  filename: bash-4.2.tar.gz
+  size: 6,845
+  homepage: http://www.gnu.org/software/bash/
+  download: http://ftp.gnu.org/gnu/bash/bash-4.2.tar.gz
+  md5: 3fb927c7c33022f1c327f14a81c0d4b0
+  packer: tar.gz
+  pack_folder: bash-4.2
+
+configure:
+  options: >-
+    --without-bash-malloc
+
+make:
+  post: >-
+    make tests
+
+make_install:
+  post: >-
+    ln -vsf bash /tools/bin/sh
+

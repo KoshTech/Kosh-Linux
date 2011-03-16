@@ -9,7 +9,7 @@ info:
   homepage: http://www.gnu.org/software/libc/
   description: "The Glibc package contains the main C library. This library provides the basic routines for allocating memory, searching directories, opening and closing files, reading and writing files, string handling, pattern matching, arithmetic, and so on."
   download: http://ftp.gnu.org/gnu/glibc/glibc-2.13.tar.bz2
-  md5: be0ea9e587f08c87604fe10a91f72afd
+  md5: 38808215a7c40aa0bb47a5e6d3d12475
   packer: tar.bz2
   pack_folder: glibc-2.13
   unpack_folder:
@@ -30,7 +30,7 @@ configure:
   options: >-
     --host=$LINUX_TARGET --build=$(../glibc-2.13/scripts/config.guess)
     --disable-profile --enable-add-ons
-    --enable-kernel=2.6.22.5 --with-headers=$TOOLS/include
+    --enable-kernel=2.6.22.5 --with-headers=/tools/include
     libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes
 
   variables: >-

@@ -12,9 +12,6 @@ info:
   md5: e381b8506210c794278f5527cba0e765
   packer: tar.gz
   pack_folder: gzip-1.4
-  unpack_folder:
-  compile_folder:
-  patches:
 
 make_install:
   pre: >-

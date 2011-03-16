@@ -1,0 +1,25 @@
+# Kosh Linux Package File
+# Specification at: http://koshlinux.com/
+
+info:
+  name: Coreutils
+  version: 8.10
+  filename: coreutils-8.10.tar.gz
+  size: 11,064
+  homepage: http://www.gnu.org/software/coreutils/
+  description: "The Coreutils package contains utilities for showing and setting the basic system characteristics."
+  download: http://ftp.gnu.org/gnu/coreutils/coreutils-8.10.tar.gz
+  md5: 74d54d09fc5c1bd3337127f49c88b1c5
+  packer: tar.gz
+  pack_folder: coreutils-8.10
+
+configure:
+  options: >-
+    --enable-install-program=hostname
+
+make_install:
+  pre: >-
+    make RUN_EXPENSIVE_TESTS=yes check
+  post: >-
+    cp -v src/su /tools/bin/su-tools
+

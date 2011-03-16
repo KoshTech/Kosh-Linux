@@ -1,0 +1,21 @@
+# Kosh Linux Package File
+# Specification at: http://koshlinux.com/
+
+info:
+  name: Tar
+  version: 1.25
+  filename: tar-1.25.tar.bz2
+  size: "878"
+  homepage: http://www.gnu.org/software/tar/
+  description: "The Tar package contains an archiving program."
+  download: http://ftp.gnu.org/gnu/tar/tar-1.25.tar.bz2
+  md5: 6e497f861c77bbba2f7da4e10270995b
+  packer: tar.bz2
+  pack_folder: tar-1.25
+
+configure:
+  variables: FORCE_UNSAFE_CONFIGURE=1
+
+make_install:
+  pre: >-
+    make check

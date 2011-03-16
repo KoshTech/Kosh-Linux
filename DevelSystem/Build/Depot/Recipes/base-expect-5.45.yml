@@ -1,0 +1,29 @@
+# Kosh Linux Package File
+# Specification at: http://koshlinux.com/
+
+info:
+  name: Expect
+  version: 5.45
+  filename: expect-5.45.tar.bz2
+  size: "614"
+  homepage: http://expect.sourceforge.net/
+  description: "The Expect package contains a program for carrying out scripted dialogues with other interactive programs."
+  download: http://prdownloads.sourceforge.net/expect/expect5.45.tar.gz
+  md5: 44e1a4f4c877e9ddc5a542dfa7ecc92b
+  packer: tar.gz
+  pack_folder: expect-5.45
+  unpack_folder: expect5.45
+  compile_folder:
+
+configure:
+  options: --with-tcl=/tools/lib --with-tclinclude=/tools/include
+  pre: |
+    cp -v configure{,.orig}
+    sed 's:/usr/local/bin:/bin:' configure.orig > configure
+
+make_install:
+  pre: >-
+    make test
+  do: >-
+    make SCRIPTS='' install
+
