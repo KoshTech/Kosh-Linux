@@ -11,8 +11,7 @@ info:
   download: http://prdownloads.sourceforge.net/expect/expect5.45.tar.gz
   md5: 44e1a4f4c877e9ddc5a542dfa7ecc92b
   packer: tar.gz
-  pack_folder: expect-5.45
-  unpack_folder: expect5.45
+  pack_folder: expect5.45
   compile_folder:
 
 configure:
