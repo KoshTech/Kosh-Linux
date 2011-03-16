@@ -1,7 +1,0 @@
-
-variables:
-  lc_all: POSIX
-  arch: x86_64
-  linux_target: x86_64-kosh-linux-gnu
-#  makeflags: -j2
-  
