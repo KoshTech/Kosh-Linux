@@ -1,0 +1,91 @@
+body {
+margin-top: 1.0em;
+background-color: #72236b;
+font-family: "Helvetica,Arial,FreeSans";
+color: #ffffff;
+}
+#container {
+margin: 0 auto;
+width: 700px;
+}
+h1 {
+font-size: 3.8em;
+color: #8ddc94;
+margin-bottom: 3px;
+}
+h1 .small {
+font-size: 0.4em;
+}
+h1 a {
+text-decoration: none
+}
+h2 {
+font-size: 1.5em;
+color: #8ddc94;
+}
+h3 {
+text-align: center;
+color: #8ddc94;
+}
+a {
+color: #8ddc94;
+}
+.description {
+font-size: 1.2em;
+margin-bottom: 30px;
+margin-top: 30px;
+font-style: italic;
+}
+.download {
+float: right;
+}
+pre {
+background: #000;
+color: #fff;
+padding: 15px;
+overflow: auto;
+font-family: Consolas, monospace;
+font-size: 9pt;
+text-align:left;
+overflow-x: auto; /* Use horizontal scroller if needed; for Firefox 2, not */
+white-space: pre-wrap; /* css-3 */
+white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+word-wrap: break-word; /* Internet Explorer 5.5+ */
+margin: 0px 0px 0px 0px;
+padding:5px 5px 3px 5px;
+white-space : normal; /* crucial for IE 6, maybe 7? */
+}
+hr {
+border: 0;
+width: 80%;
+border-bottom: 1px solid #aaa
+}
+.cmd_line {
+text-align: center;
+padding-top: 30px;
+font-style: italic;
+}
+.footer {
+text-align: center;
+padding-top: 30px;
+font-style: italic;
+}
+ul li {
+list-style: none;
+list-style-type: none;
+padding: 0;
+margin: 0;
+padding: 0px 0px 0.2em 1.5em;
+}
+
+ul.classe {
+list-style-type: none;
+list-style-image: none;
+list-style-position: outside;
+}
+ul.classe li {
+font-style: italic;
+}
+img {
+border: 0;
+}
