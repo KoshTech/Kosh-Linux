@@ -115,12 +115,20 @@ class Packager
     return optional
   end
 
+  def in_chroot?(package, action)
+    if package[action] && package[action]['chroot']
+      return ( package[action]['chroot'] == true ) ? true : false
+    end
+    false
+  end
+
   def build_package(package, operation="run")
     if operation == 'run' and package_status(package) and not @options[:force_rebuild]
       printf("%s %s %s\n", "*=> Package".dark_blue, package['name'].dark_green, "already built".dark_blue)
       return true
     end
 
+    @chroot = false
     fetch_file(package) unless optional_action?('fetch')
 
     hook_package('unpack', 'pre', package) unless optional_hook?('fetch','pre')
@@ -140,19 +148,23 @@ class Packager
     end
 
     if operation == "build" || operation == "run"
+      @chroot = in_chroot?(package, 'configure')
       hook_package('configure', 'pre', package) unless optional_hook?('configure','pre')
       configure_package(package) unless optional_action?('configure')
       hook_package('configure', 'post', package) unless optional_hook?('configure','post')
 
+      @chroot = in_chroot?(package, 'make')
       hook_package('make', 'pre', package) unless optional_hook?('make','pre')
       make_package(package) unless optional_action?('make')
       hook_package('make', 'post', package) unless optional_hook?('make','post')
     end
 
     unless operation=="source_only"
+      @chroot = in_chroot?(package, 'make_install')
       hook_package('make_install', 'pre', package) unless optional_hook?('make_install','pre')
       make_install_package(package) unless optional_action?('make_install')
       hook_package('make_install', 'post', package) unless optional_hook?('make_install','post')
+
       if @options[:paco] and not package['name'] == 'tools-paco'
         command = %Q! PACOLIST=$(paco -afz); time find #{KoshLinux::WORK}/tools -path #{KoshLinux::WORK}/tools/paco -prune -or -print | while read name; do if [ -z "$(echo "$PACOLIST" | grep $name)" ]; then echo $name; fi; done | paco -lp+ #{@package['name']} !
 #        command = %Q! find #{KoshLinux::WORK}/tools -path #{KoshLinux::WORK}/tools/paco -prune -or -print | while read name; do [ -z "$(file $name|grep \"$name: directory\")" ] && [ -z "$(paco -q $name | cut -d : -f 2)" ] && echo $name; done | paco -lp+ #{@package['name']} !
@@ -198,10 +210,11 @@ class Packager
   end
 
   def configure_package(package)
+    @local_path = ( @chroot ) ? '/' : "#{KoshLinux::WORK}/"
     unpack_folder = pack_unpack_folder(package)
-    unpack_path = "#{KoshLinux::WORK}/#{unpack_folder}"
+    unpack_path = "#{@local_path}#{unpack_folder}"
     compile_folder = package['info']['compile_folder']
-    compile_path = "#{KoshLinux::WORK}/#{compile_folder}"
+    compile_path = "#{@local_path}#{compile_folder}"
     unless package['configure'].nil?
       configure_do = package['configure']['do'].nil? ? true : package['configure']['do']
       configure_prefix = package['configure']['prefix'].nil? ? true : package['configure']['prefix']
@@ -224,13 +237,14 @@ class Packager
       compile_path = "."
     end
 
-    if configure_prefix
+    if configure_prefix == true
       prefix = "--prefix=$TOOLS"
     elsif configure_prefix != false
-      prefix = configure_prefix
+      prefix = "--prefix=#{configure_prefix}"
     else
       prefix = ""
     end
+    
     log_file = "configure_#{package['name']}"
     configure_cmd = configure_do === true ? "#{compile_path}/configure" : configure_do
     configure_line = "#{cd_path}#{variables}#{configure_cmd} #{prefix} #{options}"
@@ -241,10 +255,11 @@ class Packager
   end
 
   def make_package(package)
+    @local_path = ( @chroot ) ? '/' : "#{KoshLinux::WORK}/"
     unpack_folder = pack_unpack_folder(package)
-    unpack_path = "#{KoshLinux::WORK}/#{unpack_folder}"
+    unpack_path = "#{@local_path}#{unpack_folder}"
     compile_folder = package['info']['compile_folder']
-    compile_path = "#{KoshLinux::WORK}/#{compile_folder}"
+    compile_path = "#{@local_path}#{compile_folder}"
 
     unless package['make'].nil?
       make_do = package['make']['do'].nil? ? true : package['make']['do']
@@ -274,10 +289,11 @@ class Packager
   end
 
   def make_install_package(package)
+    @local_path = ( @chroot ) ? '/' : "#{KoshLinux::WORK}/"
     unpack_folder = pack_unpack_folder(package)
-    unpack_path = "#{KoshLinux::WORK}/#{unpack_folder}"
+    unpack_path = "#{@local_path}#{unpack_folder}"
     compile_folder = package['info']['compile_folder']
-    compile_path = "#{KoshLinux::WORK}/#{compile_folder}"
+    compile_path = "#{@local_path}#{compile_folder}"
 
     unless package['make_install'].nil?
       make_install_do = package['make_install']['do'].nil? ? true : package['make_install']['do']
@@ -438,6 +454,10 @@ class Packager
 
   def hook_package(action, hook, package)
     return if package[action].nil?
+    
+    @action = action
+    @local_path = ( @chroot ) ? '/' : "#{KoshLinux::WORK}/"
+    
     current_hook = package[action][hook]
     unless current_hook.nil? || current_hook.empty?
       puts "#{'#'.green}#{'_=> Running hook('.yellow}#{package['name'].dark_blue}::#{action.blue}.#{hook.green}#{')'.yellow}"
@@ -446,9 +466,9 @@ class Packager
       compile_folder = unpack_folder if compile_folder.nil?
       case action
       when 'unpack', 'patch'
-        cd_path = "cd #{KoshLinux::WORK}/#{unpack_folder}\n"
+        cd_path = "cd #{@local_path}#{unpack_folder}\n"
       else
-        cd_path = "cd #{KoshLinux::WORK}/#{compile_folder}\n"
+        cd_path = "cd #{@local_path}#{compile_folder}\n"
       end
       log_file = "#{action}-#{hook}_#{package['name']}"
       result = environment_box(cd_path + current_hook, log_file)
@@ -462,12 +482,13 @@ class Packager
     patches = info['patches']
     return if patches.nil?
     options = info['patches_options']
+    @local_path = ( @chroot ) ? '/' : "#{KoshLinux::WORK}/"
     puts " => Checking for #{patches.count} patch(es)"
     patches.each do |patch|
       patch_info = patch[1]
       filepath = fetch_file_download(patch_info['download'],patch_info['md5'])
       if filepath
-        work_folder = "#{KoshLinux::WORK}/#{pack_unpack_folder(package)}"
+        work_folder = "#{@local_path}#{pack_unpack_folder(package)}"
         cd_path = "cd #{work_folder}\n"
         unless File.exist?(File.join(work_folder, patch[0]))
           options = patch_info['options'] unless patch_info['options'].nil?
@@ -487,13 +508,14 @@ class Packager
 
   def environment
     $HOME = KoshLinux::WORK
-    ENV['BUILD'] = KoshLinux::KOSH_LINUX_ROOT
-    ENV['WORK']  = KoshLinux::WORK
+    ENV['BUILD'] = ( @chroot ) ? '/' : "#{KoshLinux::KOSH_LINUX_ROOT}"
+    ENV['WORK']  = ( @chroot ) ? '/' : "#{KoshLinux::WORK}/"
+    ENV['HOME']  = ( @chroot ) ? '/root' : "#{KoshLinux::WORK}/"
     ENV['TOOLS'] = KoshLinux::TOOLS
-    ENV['LOGS']  = KoshLinux::LOGS
+    ENV['LOGS']  = ( @chroot ) ? "#{KoshLinux::LOGS}/" : "#{KoshLinux::LOGS}/"
     ENV['PATH']  = "#{'/usr/lib/ccache:' if options[:ccache]}#{KoshLinux::TOOLS}/bin:/bin:/usr/bin"
 
-    environment = %W! HOME='#{$HOME}' BUILD='#{ENV['BUILD']}' WORK='#{ENV['WORK']}' TOOLS='#{ENV['TOOLS']}' LOGS='#{ENV['LOGS']}' PATH='#{ENV['PATH']}' USER='#{ENV['USER']}' !
+    environment = %W! HOME='#{ENV['HOME']}' BUILD='#{ENV['BUILD']}' WORK='#{ENV['WORK']}' TOOLS='#{ENV['TOOLS']}' LOGS='#{ENV['LOGS']}' PATH='#{ENV['PATH']}' USER='#{ENV['USER']}' !
 
     file_path = "#{KoshLinux::PROFILES}/LinuxBasic.yml"
     variables = YAML::load( File.open( file_path ))['variables']
@@ -505,11 +527,16 @@ class Packager
   end
 
   def console_script
+    chroot_line = 'exec chroot '+KoshLinux::WORK+' /tools/bin/env -i HOME=/root TERM="$TERM" PS1="\u:\w\$ " PATH=/bin:/usr/bin:/sbin:/usr/sbin:/tools/bin'
+    exec_line = 'exec env -i HOME=\"$HOME\" TERM=$TERM /bin/bash'
+
+    exec_cmd = ( @chroot ) ? chroot_line : exec_line
+    puts "=x=x: console_script: #{exec_cmd}"
     console_script =<<END_OF_CONSOLE
 #!/bin/bash
-
 HOME='#{$HOME}'
-exec env -i HOME=\"$HOME\" TERM=$TERM /bin/bash $@
+CHROOT_LINE='#{chroot_line}'
+#{exec_cmd} $@
 
 END_OF_CONSOLE
   end
@@ -526,6 +553,7 @@ END_OF_CONSOLE
     # Create and update .bashrc and console files
     @bashrc_path=File.join(KoshLinux::WORK, '.bashrc')
     console_path=File.join(KoshLinux::WORK, 'console')
+    
     begin
       bashrc_file = File.open(@bashrc_path, 'w') do |bashrc|
         extra_options.each do |options|
@@ -564,10 +592,11 @@ END_OF_CONSOLE
   def environment_box(which_command, log_file)
     KoshLinux::require_vendor('shell_script_builder')
     environment_set
-    last_command_path="#{$HOME}/last_command.sh"
+    local_path = ( @chroot ) ? '/' : "#{KoshLinux::WORK}/"
+    last_command_path="#{KoshLinux::WORK}/last_command.sh"
     last_command_script=shell do |sh|
-      sh.if :file? => @bashrc_path do |bashrc|
-        bashrc.source @bashrc_path
+      sh.if :file? => "#{local_path}.bashrc" do |bashrc|
+        bashrc.source "#{local_path}.bashrc"
       end
       set_vars, unset_vars = variables_package
       set_vars.each do |var|
@@ -581,6 +610,7 @@ END_OF_CONSOLE
       sh.echo "'BEGIN COMMANDS>>>'" if @options[:debug]
       sh << which_command
     end
+#    FileUtils.rm(last_command_path)
     File.open(last_command_path, 'w') do |last_command|
       last_command.write(last_command_script)
       last_command.chmod(0754)
@@ -593,7 +623,14 @@ END_OF_CONSOLE
     full_formated_commands="  "+full_formated_commands
     puts "#{'#'.green}#{'=> Commands:'.yellow}\n#{formated_commands}" if @options[:debug]
     spinner true
-    %x[ exec env -i HOME=$HOME TERM=$TERM /bin/bash #{command_line} 2>#{ENV['LOGS']}/#{log_file}.err 1>#{ENV['LOGS']}/#{log_file}.out ]
+    
+    if @chroot
+      command_line = "/last_command.sh"
+      %x[ exec chroot #{KoshLinux::WORK} /tools/bin/env -i HOME=/root TERM="$TERM" PS1='\u:\w\$ ' PATH=/bin:/usr/bin:/sbin:/usr/sbin:/tools/bin #{command_line} 2>#{ENV['LOGS']}#{log_file}.err 1>#{ENV['LOGS']}#{log_file}.out ]
+    else
+      %x[ exec env -i HOME=$HOME TERM=$TERM /bin/bash #{command_line} 2>#{ENV['LOGS']}#{log_file}.err 1>#{ENV['LOGS']}#{log_file}.out ]
+    end
+    
     command_status = $?.exitstatus
     spinner false
     status_cmd="#==> Commands exitstatus(#{command_status})"
