@@ -1,0 +1,28 @@
+# Kosh Linux Package File
+# Specification at: http://koshlinux.com/
+
+info:
+  name: Man-pages 
+  version: 3.32
+  filename: man-pages-3.32.tar.bz2
+  size: "1,108"
+  homepage: http://www.kernel.org/doc/man-pages/
+  description: "The Man-pages package contains over 1,900 man pages."
+  download: http://www.kernel.org/pub/linux/docs/manpages/man-pages-3.32.tar.bz2
+  md5: 1278c5289660e42a597fefd30d9bdcf0
+  packer: tar.bz2
+  pack_folder: man-pages-3.32
+  unpack_folder:
+  compile_folder:
+  patches:
+
+configure:
+  do: no
+
+make:
+  do: no
+
+make_install:
+  chroot: true
+  do: >-
+    make install

@@ -1,0 +1,115 @@
+# Kosh Linux Package File
+# Specification at: http://koshlinux.com/
+
+info:
+  name: Glibc
+  version: 2.13
+  filename: glibc-2.13.tar.bz2
+  size: "15,300"
+  homepage: http://www.gnu.org/software/libc/
+  description: "The Glibc package contains the main C library. This library provides the basic routines for allocating memory, searching directories, opening and closing files, reading and writing files, string handling, pattern matching, arithmetic, and so on."
+  download: http://ftp.gnu.org/gnu/glibc/glibc-2.13.tar.bz2
+  md5: 38808215a7c40aa0bb47a5e6d3d12475
+  packer: tar.bz2
+  pack_folder: glibc-2.13
+  unpack_folder:
+  compile_folder: glibc-2.13_build
+  patches_options: "-Np1"
+  patches:
+    glibc_2_12_1_gcc_fix_1:
+      name: Glibc GCC Build Fix Patch
+      size: 2.5
+      download: http://www.linuxfromscratch.org/patches/lfs/6.8/glibc-2.13-gcc_fix-1.patch
+      md5: d1f28cb98acb9417fe52596908bbb9fd
+      options: "-Np1"
+
+variables:
+  unset: |
+    LD_LIBRARY_PATH:[ ! -z $LD_LIBRARY_PATH ] 
+    ARCH:[ ! -z $ARCH ] 
+
+patch:
+  pre: |
+    DL=$(readelf -l $WORK/bin/sh | sed -n 's@.*interpret.*/tools\(.*\)]$@\1@p')
+    sed -i "s|libs -o|libs -L/usr/lib -Wl,-dynamic-linker=$DL -o|" \
+            scripts/test-installation.pl
+    unset DL
+    sed -i -e 's/"db1"/& \&\& $name ne "nss_test1"/' scripts/test-installation.pl
+    sed -i 's|@BASH@|/bin/bash|' elf/ldd.bash.in
+
+configure:
+  chroot: true
+  prefix: /usr
+  options: >-
+    --host=$LINUX_TARGET
+    --disable-profile --enable-add-ons
+    --enable-kernel=2.6.22.5 --libexecdir=/usr/lib/glibc
+
+  variables: >-
+    CC=$LINUX_TARGET-gcc
+
+  pre: |
+    sed -i '195,213 s/PRIVATE_FUTEX/FUTEX_CLOCK_REALTIME/' nptl/sysdeps/unix/sysv/linux/x86_64/pthread_rwlock_timed{rd,wr}lock.S
+    
+    case `uname -m`
+      in i?86) 
+      echo 'CFLAGS += -march=i486 -mtune=native -O3 -pipe' > configparms ;; 
+    esac;
+
+make:
+  chroot: true
+  post: |
+    cp -v ../glibc-2.13/iconvdata/gconv-modules iconvdata
+    make -k check 2>&1 | tee glibc-check-log
+    grep Error glibc-check-log
+    touch /etc/ld.so.conf
+
+make_install:
+  chroot: true
+  post: |
+    mkdir -pv /usr/lib/locale
+    localedef -i cs_CZ -f UTF-8 cs_CZ.UTF-8
+    localedef -i de_DE -f ISO-8859-1 de_DE
+    localedef -i de_DE@euro -f ISO-8859-15 de_DE@euro
+    localedef -i de_DE -f UTF-8 de_DE.UTF-8
+    localedef -i en_HK -f ISO-8859-1 en_HK
+    localedef -i en_PH -f ISO-8859-1 en_PH
+    localedef -i en_US -f ISO-8859-1 en_US
+    localedef -i en_US -f UTF-8 en_US.UTF-8
+    localedef -i es_MX -f ISO-8859-1 es_MX
+    localedef -i fa_IR -f UTF-8 fa_IR
+    localedef -i fr_FR -f ISO-8859-1 fr_FR
+    localedef -i fr_FR@euro -f ISO-8859-15 fr_FR@euro
+    localedef -i fr_FR -f UTF-8 fr_FR.UTF-8
+    localedef -i it_IT -f ISO-8859-1 it_IT
+    localedef -i ja_JP -f EUC-JP ja_JP
+    localedef -i tr_TR -f UTF-8 tr_TR.UTF-8
+    localedef -i zh_CN -f GB18030 zh_CN.GB18030
+    
+    echo -e "# Begin /etc/nsswitch.conf
+    
+    passwd: files
+    group: files
+    shadow: files
+
+    hosts: files dns
+    networks: files
+
+    protocols: files
+    services: files
+    ethers: files
+    rpc: files
+    
+    # End /etc/nsswitch.conf" > /etc/nsswitch.conf
+    
+    # tzselect
+    
+    cp -v --remove-destination /usr/share/zoneinfo/America/Sao_Paulo \
+    /etc/localtime
+    
+    echo -e "# Begin /etc/ld.so.conf
+
+    /usr/local/lib
+    /opt/lib
+
+    # End /etc/ld.so.conf" >  /etc/ld.so.conf

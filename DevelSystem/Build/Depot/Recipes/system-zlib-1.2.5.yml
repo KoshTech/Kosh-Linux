@@ -1,0 +1,32 @@
+# Kosh Linux Package File
+# Specification at: http://koshlinux.com/
+
+info:
+  name: Zlib
+  version: 1.2.5
+  filename: zlib-1.2.5.tar.bz2
+  size: "532"
+  homepage: http://www.zlib.net/
+  description: "The Zlib package contains compression and decompression routines used by some programs."
+  download: http://www.zlib.net/zlib-1.2.5.tar.bz2
+  md5: be1e89810e66150f5b0327984d8625a0
+  packer: tar.bz2
+  pack_folder: zlib-1.2.5
+
+configure:
+  chroot: true
+  pre: sed -i 's/ifdef _LARGEFILE64_SOURCE/ifndef _LARGEFILE64_SOURCE/' zlib.h
+  prefix: /usr
+  variables: >-
+    CFLAGS='-mstackrealign -fPIC -O3'
+
+make:
+  chroot: true
+
+make_install:
+  chroot: true
+  pre: >-
+    make check
+  post: >-
+    mv -v /usr/lib/libz.so.* /lib
+    ln -sfv ../../lib/libz.so.1.2.5 /usr/lib/libz.so

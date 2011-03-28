@@ -1,0 +1,37 @@
+# Kosh Linux Package File
+# Specification at: http://koshlinux.com/
+
+info:
+  name: Linux
+  type: normal_system
+  version: 2.6.37
+  filename: linux-2.6.37.tar.bz2
+  size: "71,854"
+  homepage: http://www.kernel.org/
+  description: "The Linux API Headers expose the kernel's API for use by Glibc."
+  download: http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.37.tar.bz2
+  md5: c8ee37b4fdccdb651e0603d35350b434
+  packer: tar.bz2
+  pack_folder: linux-2.6.37
+  unpack_folder:
+  compile_folder: 
+
+configure:
+  chroot: true
+  prefix: no
+  pre: >-
+    make mrproper
+  do: >-
+    make headers_check
+
+make:
+  chroot: true
+  do: >-
+    make INSTALL_HDR_PATH=dest headers_install
+  post: >-
+    find dest/include \( -name .install -o -name ..install.cmd \) -delete
+
+make_install:
+  chroot: true
+  do: >-
+    cp -rv dest/include/* /usr/include

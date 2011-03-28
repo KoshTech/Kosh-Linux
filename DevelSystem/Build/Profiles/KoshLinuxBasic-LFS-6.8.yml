@@ -54,3 +54,7 @@ packages:
   - system-preparing_virtual_kernel_file_system
   - system-creating_directories
   - system-creating_essential
+  - system-linux-2.6.37
+  - system-man-pages-3.32
+  - system-glibc-2.13
+  - system-re-adjusts_toolchain-0.0.7
