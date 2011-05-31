@@ -15,7 +15,7 @@ unpack:
 configure:
   do: no
   pre: |
-    mkdir -v $WORK/{dev,proc,sys}
+    mkdir -pv $WORK/{dev,proc,sys}
     mknod -m 600 $WORK/dev/console c 5 1
     mknod -m 666 $WORK/dev/null c 1 3
 
